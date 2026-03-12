@@ -78,7 +78,6 @@ const router = createBrowserRouter([
         { 
             index: true, 
             element: <Home />,
-            loader: async () => { return apiFetch(`${BASE_URL}/api/tasks`); },
         },
         {
             path: "/projects",

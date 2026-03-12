@@ -26,6 +26,7 @@ async function createProjects(formData) {
 
 async function updateProjects(formData) {
     const id = formData.get("id");
+    if (!id) throw new Error("Project id missing");
 
     await apiFetch(`${BASE_URL}/api/projects/${id}`, {
         method: "PUT",
@@ -35,6 +36,7 @@ async function updateProjects(formData) {
         }),
     });
 } 
+
 async function deleteProjects(formData) {
     const id = formData.get("id");
     

@@ -6,8 +6,14 @@ import { calcDueDate } from "../api/calculateDueDate";
 export function ProjectSection() {
     const navigate = useNavigate();
     const { projects } = useRouteLoaderData("root");
-    console.log("project: ",projects);
 
+    const [ filterTag, setFilterTag ] = useState("");
+    console.log(filterTag);
+
+    const results = projects?.projects.filter(p => p.tags === filterTag);
+    const filteredData = (results && results.length > 0) ? results : projects;
+
+    console.log("filteredData: ",filteredData);
 
     return (
         <div className="p-6 ">
@@ -20,6 +26,7 @@ export function ProjectSection() {
                         <select 
                             name="filter" 
                             className="px-3 py-2 outline-none bg-white border border-gray-300 rounded-md shadow-sm text-sm"
+                            onChange={(e)=>{setFilterTag(e.target.value)}}
                         >
                             <option value="">All Projects</option>
                             <option value="in-progress">In Progress</option>
@@ -35,9 +42,9 @@ export function ProjectSection() {
                 </div>
 
                 {/* Card Grid Layout */}
-                {!projects || projects.projects.length > 0 ? (
+                {!filteredData || filteredData.projects.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {projects?.projects.map((project, index) => (
+                        {filteredData?.projects.map((project, index) => (
                             <div 
                                 onClick={() => navigate(`/project/${project._id}`)}
                                 key={project._id || index} 
@@ -112,7 +119,7 @@ export function ProjectManagement(){
                 <div
                     className="bg-gray-300 border border-gray-200 rounded-xl p-4 mt-4"
                 >
-                {project && (
+                {project.length > 0 && (
                     <>
                     {project.map(p=>(
                         <div
@@ -188,6 +195,7 @@ export function ProjectForm(){
     console.log("projectToUpdate:  ", projectToUpdate);
 
     const [formData, setFormData] = useState({
+        id: id ?? "",
         name: projectToUpdate?.name ?? "",
         description: projectToUpdate?.description ?? "",
     });
@@ -205,6 +213,7 @@ export function ProjectForm(){
         <>
             <Form method="post" className="container mx-auto p-4 md:p-8">
                 <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
+                    
                     <label 
                         htmlFor="name" 
                         className="block text-gray-700"
@@ -239,12 +248,14 @@ export function ProjectForm(){
                         placeholder="Task name"
                     />
 
-                    
+                    {isEdit && (
+                        <input type="hidden" name="id" value={id} />
+                    )}
 
                     <button 
                         type="submit" 
                         name="intent" 
-                        value="create" 
+                        value={ isEdit ? "update" : "create" }
                         className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
                     > 
                         {isEdit ? "Edit Project" : "Create Project"} 

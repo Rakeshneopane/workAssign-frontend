@@ -219,6 +219,7 @@ export function TeamForm(){
     console.log("teamToUpdate: ", teamToUpdate);
 
     const [formData, setFormData] = useState({
+        id: id ?? "",
         name: teamToUpdate?.name ?? "",
         description: teamToUpdate?.description ??  "",
     });
@@ -270,13 +271,17 @@ export function TeamForm(){
                         placeholder="Task name"
                     />
 
+                    {isEdit && (
+                        <input type="hidden" name="id" value={id} />
+                    )}
+
                     <button 
                         type="submit" 
                         name="intent" 
-                        value="create" 
+                        value={ isEdit ? "update" : "create" } 
                         className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
                     > 
-                        {isEdit ? "Edit Team":"Create Team" }
+                        { isEdit ? "Edit Team" : "Create Team" }
                     </button>
                 </div>
             </Form>

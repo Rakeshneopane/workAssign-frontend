@@ -6,22 +6,21 @@ import { AdminOnly } from "../components/AdminGuard";
 export function TaskSection(){
 
     const { tasks } = useRouteLoaderData("root");
-    const tasksData = tasks;
-    console.log(tasksData)
+    const tasksData = tasks.tasks;
+    console.log("tasksData ", tasksData);
 
     const navigate = useNavigate();
 
-    const calcDueDate = (daysToComplete)=>{
-        const today = new Date();
-        const dueDate = new Date(today);
-        dueDate.setDate(today.getDate() + Number(daysToComplete));
-        
-         return dueDate.toLocaleDateString('en-GB', { 
-            day: 'numeric', 
-            month: 'short', 
-            year: 'numeric' 
-        });
-    }
+    const [ filterTag, setFilterTag ] = useState("");
+    console.log(filterTag);
+
+    const results = tasksData.filter(t=>t.status === filterTag);
+    console.log("results ",results);
+
+    const filteredData = (results && results.length > 0) ? results : tasksData;
+
+    console.log("filteredData: ",filteredData);
+
   return (
         <div className="p-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -32,6 +31,7 @@ export function TaskSection(){
                             name="filter" 
                             id="filter"
                             className="px-3 py-2 outline-none bg-white border border-gray-300 rounded-md shadow-sm text-sm"
+                            onChange={(e)=>{setFilterTag(e.target.value)}}
                         >
                             <option value="">Filter</option>
                             <option value="in-progress">In Progress</option>
@@ -72,7 +72,7 @@ export function TaskSection(){
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                { tasksData && tasksData.tasks.map((task, index) => (
+                                { filteredData && filteredData.map((task, index) => (
                                     <tr 
                                         key={index} 
                                         className="hover:bg-gray-50"
@@ -220,7 +220,7 @@ export function TaskForm(){
 
     console.log("Tasks: ", editTask);
 
-    const {id} = useParams();
+    const { id } = useParams();
 
     console.log("id: ", id);
 
@@ -233,6 +233,7 @@ export function TaskForm(){
     const navigation = useNavigate();
 
     const [formData, setFormData] = useState({
+        id: id ?? "",
         name: editTask?.name ?? "",
         project: editTask?.project?._id ?? "",
         owners: editTask?.owners ?? [],
@@ -386,6 +387,10 @@ export function TaskForm(){
                         <option value={"completed"}>Completed</option>                    
                         <option value={"blocked"}>Blocked</option>
                     </select>
+
+                    {isEdit && (
+                        <input type="hidden" name="id" value={id} />
+                    )}
 
                     <button 
                         type="submit" 
