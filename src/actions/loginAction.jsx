@@ -16,6 +16,7 @@ export default async function loginAction({ request }) {
         console.log(response);
 
         localStorage.setItem("authToken", response.token);
+        console.log(response.token);
         localStorage.setItem("user", JSON.stringify(response.user));
 
         return redirect("/");

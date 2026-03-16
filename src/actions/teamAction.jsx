@@ -22,6 +22,8 @@ async function createTeam(formData) {
             description: formData.get("description"),
         }),
     });
+
+    return { success: true, message: "Team created successfully!" };
 } 
 
 async function updateTeam(formData) {
@@ -34,6 +36,7 @@ async function updateTeam(formData) {
             description: formData.get("description"),
         }),
     });
+    return { success: true, message: "Team updated successfully!" };
 } 
 async function deleteTeam(formData) {
     const id = formData.get("id");

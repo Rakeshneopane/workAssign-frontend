@@ -21,8 +21,8 @@ async function createTask(formData) {
         project: formData.get("project"),
         owners: formData.getAll("owners"),
         team: formData.get("team"),
-        tags: [formData.get("tags")],
-        timeToComplete: formData.get("timeToComplete"),
+        tags: formData.getAll("tags"),
+        timeToComplete: Number(formData.get("timeToComplete")),
         status: formData.get("status"),
     }
 
@@ -33,7 +33,7 @@ async function createTask(formData) {
         body: JSON.stringify(task),
     });
     
-    return { success : "Task saved successfully" }
+    return { success : "Task created successfully!" }
 } 
 
 async function updateTask(formData) {
@@ -44,8 +44,8 @@ async function updateTask(formData) {
         project: formData.get("project"),
         owners: formData.getAll("owners"),
         team: formData.get("team"),
-        tags: [formData.get("tags")],
-        timeToComplete: formData.get("timeToComplete"),
+        tags: formData.getAll("tags"),
+        timeToComplete: Number(formData.get("timeToComplete")),
         status: formData.get("status"),
     }
 
@@ -53,6 +53,8 @@ async function updateTask(formData) {
         method: "PUT",
         body: JSON.stringify(task),
     });
+
+    return { success: true, message: "Task updated successfully!" };
 } 
 async function deleteTask(formData) {
     const id = formData.get("id");
@@ -60,4 +62,6 @@ async function deleteTask(formData) {
     await apiFetch(`${BASE_URL}/api/tasks/${id}`, {
         method: "DELETE",
     });
+
+    return { success: true, message: "Task deleted successfully!" };
 } 

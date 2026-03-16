@@ -1,7 +1,9 @@
-import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams, useFetcher, useNavigation } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { calcDueDate } from "../api/calculateDueDate";
 import { AdminOnly } from "../components/AdminGuard";
+import { Modal } from "../components/ModalOverlays";
+import { toast } from "react-toastify";
 
 export function TaskSection(){
 
@@ -214,7 +216,25 @@ export function TaskManagement() {
 export function TaskForm(){
 
     const loaderData = useLoaderData();
+    
+    const fetcher = useFetcher();
+    
+    const navigate = useNavigate();
+    const isSubmitting = fetcher.state === "submitting";
+    
     console.log("loaderData:", loaderData);
+
+    useEffect(()=>{
+        if(fetcher.data?.success){
+            toast.success(fetcher.data.message);
+            const timer = setTimeout(()=>{
+                navigate("/tasks");
+            },500);
+            
+            return ()=>clearTimeout(timer);
+        }
+        
+    },[fetcher.data, navigate]);
 
     const editTask = loaderData.tasks;
 
@@ -226,19 +246,15 @@ export function TaskForm(){
 
     const isEdit = !!id;
 
-    const { projects,tasks, teams } = useRouteLoaderData("root");
-
-    
-
-    const navigation = useNavigate();
+    const { projects, tasks, teams, users, tags } = useRouteLoaderData("root");
 
     const [formData, setFormData] = useState({
         id: id ?? "",
         name: editTask?.name ?? "",
         project: editTask?.project?._id ?? "",
-        owners: editTask?.owners ?? [],
+        owners: editTask?.owners?.map(o => typeof o === 'object' ? o._id : o) ?? [],
         team: editTask?.team?._id ?? "",
-        tags: editTask?.tags ?? "",
+        tags: editTask?.tags?.map(t => typeof t === 'object' ? t._id : t) ?? [],
         timeToComplete: editTask?.timeToComplete ?? "",
         status: editTask?.status ?? "",
     });
@@ -254,154 +270,175 @@ export function TaskForm(){
 
     return(
         <>
-            <Form method="post" className="container mx-auto p-4 md:p-8">
-                <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-                    <label 
-                        htmlFor="name" 
-                        className="block text-gray-700"
-                    >
-                        Task Name:
-                    </label>
-                    <input 
-                        type="text"
-                        name="name"
-                        id="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Task name"
-                    />
+            <Modal onClose={()=> navigate("/tasks")}>
+                <fetcher.Form method="post" action="/tasks" className="container mx-auto p-4 md:p-8">
+                    <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
+                        <label 
+                            htmlFor="name" 
+                            className="block text-gray-700"
+                        >
+                            Task Name:
+                        </label>
+                        <input 
+                            type="text"
+                            name="name"
+                            id="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Task name"
+                        />
 
-                    <label 
-                        htmlFor="project"
-                        className="block text-gray-700"
-                    >
-                        Project:
-                    </label>
-                    <select 
-                        type="text"
-                        name="project"
-                        id="project"
-                        value={formData.project}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                    >
-                        <option value={""}>Select Project</option>
-                        {projects?.projects.map((project,index)=>(
-                            <option value={project._id} key={index}> {project.name} </option>
-                        ))}
-                    </select>
+                        <label 
+                            htmlFor="project"
+                            className="block text-gray-700"
+                        >
+                            Project:
+                        </label>
+                        <select 
+                            type="text"
+                            name="project"
+                            id="project"
+                            value={formData.project}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                        >
+                            <option value={""}>Select Project</option>
+                            {projects?.projects.map((project,index)=>(
+                                <option value={project._id} key={index}> {project.name} </option>
+                            ))}
+                        </select>
 
-                    {/* <label htmlFor="owners">Owners:</label>
-                    <select 
-                        type="text"
-                        name="owners"
-                        id="owners"
-                        value={formData.project}
-                        onChange={handleChange}
-                        multiple
-                        required
-                    >
-                        <option value={""}>Select Owners</option>
-                        {users?.map((owner,index)=>(
-                            <option value={owner._id} key={index}> {owner.name} </option>  
-                        ))}
-                    </select> */}
+                        <label 
+                            htmlFor="owners"
+                        >
+                            Owners: (Hold Ctrl/Cmd to select multiple)
+                        </label>
+                        <select 
+                            multiple
+                            type="text"
+                            name="owners"
+                            id="owners"
+                            value={formData.owners}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    owners: [...e.target.selectedOptions].map(o => o.value)
+                                })
+                            }
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            required
+                        >
+                            <option value={""}>Select Owners</option>
+                            {users?.users.map((owner,index)=>(
+                                <option value={owner._id} key={index}> {owner.name} </option>  
+                            ))}
+                        </select>
 
-                    <label 
-                        htmlFor="team"
-                        className="block text-gray-700"    
-                    >
-                        Teams:
-                    </label>
-                    <select 
-                        type="text"
-                        name="team"
-                        id="team"
-                        value={formData.team}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md "
-                    >
-                        <option value={""}>Select team</option>
-                        {teams?.teams.map((team,index)=>(
-                            <option value={team._id} key={index}> {team.name} </option>
-                        ))}
-                    </select>
+                        <label 
+                            htmlFor="team"
+                            className="block text-gray-700"    
+                        >
+                            Teams:
+                        </label>
+                        <select 
+                            type="text"
+                            name="team"
+                            id="team"
+                            value={formData.team}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md "
+                        >
+                            <option value={""}>Select team</option>
+                            {teams?.teams.map((team,index)=>(
+                                <option value={team._id} key={index}> {team.name} </option>
+                            ))}
+                        </select>
 
-                    <label 
-                        htmlFor="tags"
-                        className="block text-gray-700"
-                    >
-                        Tags:
-                    </label>
-                    <input 
-                        type="text"
-                        name="tags"
-                        id="tags"
-                        value={formData.tags}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 p-2 rounded rounded-md"
-                        placeholder="Tags"
-                    />
+                        <label 
+                            htmlFor="tags"
+                            className="block text-gray-700"
+                        >
+                            Tags: (Hold Ctrl/Cmd to select multiple)
+                        </label>
+                        <select 
+                            multiple
+                            type="text"
+                            name="tags"
+                            id="tags"
+                            value={formData.tags}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    tags: [...e.target.selectedOptions].map(t => t.value)
+                                })
+                            }
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md "
+                        >
+                            <option value={""}>Select tags</option>
+                            {tags?.tags.map((tag,index)=>(
+                                <option value={tag._id} key={index}> {tag.name} </option>
+                            ))}
+                        </select>
 
-                    <label 
-                        htmlFor="timeToComplete"
-                        className="block text-gray-700"
-                    >
-                        Time To Complete:
-                    </label>
-                    <input 
-                        type="number"
-                        name="timeToComplete"
-                        id="timeToComplete"
-                        value={formData.timeToComplete}
-                        onChange={handleChange}
-                        min={1}
-                        required
-                        className="mt-1 block w-full border border-gray-300 p-2 rounded rounded-md"
-                        placeholder="Time to complete in days"
-                    />
+                        <label 
+                            htmlFor="timeToComplete"
+                            className="block text-gray-700"
+                        >
+                            Time To Complete:
+                        </label>
+                        <input 
+                            type="number"
+                            name="timeToComplete"
+                            id="timeToComplete"
+                            value={formData.timeToComplete}
+                            onChange={handleChange}
+                            min={1}
+                            className="mt-1 block w-full border border-gray-300 p-2 rounded rounded-md"
+                            placeholder="Time to complete in days"
+                        />
 
-                    <label 
-                        htmlFor="status"
-                        className="block text-gray-700"
-                    >
-                        Status: 
-                    </label>
-                    <select 
-                        type="text"
-                        name="status"
-                        id="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full border border-gray-300 rounded rounded-md p-2"
-                    >
-                        <option value={""}>Select Status</option> 
-                        <option value={"to-do"}>To Do</option>                   
-                        <option value={"in-progress"}>In progress</option>                    
-                        <option value={"completed"}>Completed</option>                    
-                        <option value={"blocked"}>Blocked</option>
-                    </select>
+                        <label 
+                            htmlFor="status"
+                            className="block text-gray-700"
+                        >
+                            Status: 
+                        </label>
+                        <select 
+                            type="text"
+                            name="status"
+                            id="status"
+                            value={formData.status}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full border border-gray-300 rounded rounded-md p-2"
+                        >
+                            <option value={""}>Select Status</option> 
+                            <option value={"to-do"}>To Do</option>                   
+                            <option value={"in-progress"}>In progress</option>                    
+                            <option value={"completed"}>Completed</option>                    
+                            <option value={"blocked"}>Blocked</option>
+                        </select>
 
-                    {isEdit && (
-                        <input type="hidden" name="id" value={id} />
-                    )}
+                        {isEdit && (
+                            <input type="hidden" name="id" value={id} />
+                        )}
 
-                    <button 
-                        type="submit" 
-                        name="intent" 
-                        value={isEdit ? "update" : "create"} 
-                        className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
-                    > 
-                        {isEdit ? "Edit Task" : "Create Task" }
-                    </button>
-                </div>
-            </Form>
+                        <button 
+                            type="submit" 
+                            name="intent" 
+                            value={isEdit ? "update" : "create"} 
+                            className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
+                        > 
+                            {isSubmitting ? "Processing..." : (isEdit ? "Edit Task" : "Create Task")}
+                        </button>
+                    </div>
+                </fetcher.Form>
+            </Modal>            
         </>
     )
 }

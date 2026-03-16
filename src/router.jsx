@@ -29,15 +29,17 @@ async function rootLoader() {
     }
 
     try {
-        const [ projects, tasks, teams ]= await Promise.all([
+        const [ projects, tasks, teams, users, tags ]= await Promise.all([
             apiFetch(`${BASE_URL}/api/projects`),
             apiFetch(`${BASE_URL}/api/tasks`),
             apiFetch(`${BASE_URL}/api/teams`),
+            apiFetch(`${BASE_URL}/api/auth/all`),
+            apiFetch(`${BASE_URL}/api/tags`),
         ]);
 
-        console.log(projects, tasks, teams);
+        console.log(projects, tasks, teams, users, tags);
 
-        return { projects, tasks, teams };
+        return { projects, tasks, teams, users, tags };
     } catch (error) {
         console.log(error);
         return null;
@@ -84,25 +86,25 @@ const router = createBrowserRouter([
             element: <ProjectSection />,
             loader: async () => { return apiFetch(`${BASE_URL}/api/projects`); },
             action: projectAction,
-        },
-         {
-            path: "/project/create",
-            element: <ProjectForm />,
-            action: projectAction,
-            loader: async () => { return apiFetch(`${BASE_URL}/api/projects`); },
+            children: [
+                {
+                    path: "create", 
+                    element: <ProjectForm />,
+                },
+                {
+                    path: ":id/edit",
+                    element: <ProjectForm />,
+                    loader:async ({params})=>{ return apiFetch(`${BASE_URL}/api/projects/${params.id}`);},
+                },
+                
+            ]
         },
         {
-            path: "/project/:id",
+            path: "projects/:id",
             element: <ProjectManagement />,
-            loader: async ({params})=>{ return apiFetch(`${BASE_URL}/api/projects/${params.id}`);} ,
-            action: projectAction,
+            loader: async ({params})=>{ return apiFetch(`${BASE_URL}/api/projects/${params.id}`);},
         },
-        {
-            path: "/project/:id/edit",
-            element: <ProjectForm />,
-            loader: async ({params})=>{ return apiFetch(`${BASE_URL}/api/projects/${params.id}`);} ,
-            action: projectAction,
-        },
+  
         {
             path: "/tasks",
             element: <Tasks />,
@@ -124,6 +126,7 @@ const router = createBrowserRouter([
         {
             path: "/tasks/create",
             element: <TaskForm />,
+            loader: async () => { return apiFetch(`${BASE_URL}/api/tasks`); },
             action: taskAction,
         },
         

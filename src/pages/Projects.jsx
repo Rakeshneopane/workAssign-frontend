@@ -1,24 +1,26 @@
-import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useLoaderData, Link, Form, useActionData, useNavigate, useNavigation, useRouteLoaderData, useParams, Outlet, useFetcher } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { AdminOnly } from "../components/AdminGuard";
 import { calcDueDate } from "../api/calculateDueDate";
+import { Modal } from "../components/ModalOverlays";
+import { toast } from "react-toastify";
 
 export function ProjectSection() {
     const navigate = useNavigate();
     const { projects } = useRouteLoaderData("root");
+    const projectsData = projects?.projects; 
 
     const [ filterTag, setFilterTag ] = useState("");
     console.log(filterTag);
 
-    const results = projects?.projects.filter(p => p.tags === filterTag);
-    const filteredData = (results && results.length > 0) ? results : projects;
+    const results = projectsData.filter(p => p.tags === filterTag);
+    const filteredData = (results && results.length > 0) ? results : projectsData;
 
     console.log("filteredData: ",filteredData);
 
     return (
-        <div className="p-6 ">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                
+        
+            <>  
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-blue-600">My Projects</h1>
@@ -33,7 +35,7 @@ export function ProjectSection() {
                             <option value="completed">Completed</option>
                         </select>
                         <Link 
-                            to="/project/create" 
+                            to="/projects/create" 
                             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
                         >
                             + New Project
@@ -42,11 +44,11 @@ export function ProjectSection() {
                 </div>
 
                 {/* Card Grid Layout */}
-                {!filteredData || filteredData.projects.length > 0 ? (
+                {filteredData.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {filteredData?.projects.map((project, index) => (
+                        {filteredData.map((project, index) => (
                             <div 
-                                onClick={() => navigate(`/project/${project._id}`)}
+                                onClick={() => navigate(`/projects/${project._id}`)}
                                 key={project._id || index} 
                                 className="bg-gray-100 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex flex-col justify-between"
                             >
@@ -67,7 +69,7 @@ export function ProjectSection() {
                                     >
                                         <button 
                                             className="text-blue-500 hover:text-blue-700 font-medium text-sm"
-                                            onClick={()=>navigate(`/project/${project._id}/edit`)}    
+                                            onClick={()=>navigate(`/projects/${project._id}/edit`)}    
                                         >
                                             Edit
                                         </button>
@@ -85,6 +87,9 @@ export function ProjectSection() {
                                 </AdminOnly>
                             </div>
                         ))}
+                        <div>
+                            <Outlet />
+                        </div>
                     </div>
                     ):(
                     /* Empty State */
@@ -93,8 +98,7 @@ export function ProjectSection() {
                         </div>
                     )
                 }
-            </div>
-        </div>
+           </>
     );
 }
 
@@ -104,11 +108,11 @@ export function ProjectManagement(){
 
     const {tasks} = useRouteLoaderData("root");
     
-    const projectId = project.map(p=>p._id);
+    const projectId = project._id;
 
     console.log("projectId: ", projectId, "project: ", project);
 
-    const tasksOnProject = tasks.tasks.filter(t=>t.project._id === projectId[0]);
+    const tasksOnProject = tasks.tasks.filter(t=>t.project._id === projectId);
 
     console.log("task on project: ", tasksOnProject);
     return(
@@ -119,34 +123,38 @@ export function ProjectManagement(){
                 <div
                     className="bg-gray-300 border border-gray-200 rounded-xl p-4 mt-4"
                 >
-                {project.length > 0 && (
+                {project && (
                     <>
-                    {project.map(p=>(
                         <div
                             onClick={(e)=> e.stopPropagation()} 
-                            key={p._id}
+                            key={project._id}
                             className="mt-4"
                         >
-                        <h2> <span className="font-bold"> Project name: </span>  {p.name}</h2>
-                        <p> <span className="font-bold"> Project Description:  </span>{p.description}</p>
+                        <h2> <span className="font-bold"> Project name: </span>  {project.name}</h2>
+                        <p> <span className="font-bold"> Project Description:  </span>{project.description}</p>
                         <AdminOnly>
                             <button 
-                                onClick={(e)=> navigate(`/project/${p._id}/edit`)}
+                                onClick={(e)=> navigate(`/projects/${project._id}/edit`)}
                                 className="mt-4 text-blue-800 text-xl font-bold"
                             >
                                 Edit Project
                             </button>
                         </AdminOnly>
                         </div>
-                    ))}
+                    
 
                     {tasksOnProject.length > 0 ? (
                         <>
                         {tasksOnProject.map((t,index)=>(
                             <div key={t._id} className="bg-gray-100 border border-gray-200 sm:px-6 lg:px-8 py-4 shadow rounded-xl mt-4">
                                 <p> <span className="font-bold"> Task #{index+1}: </span> {t.name} </p>
-                                <p> <span className="font-bold"> Tag : </span>  {t.tags}</p>
-                                <p> <span className="font-bold"> Owners: </span>  {t.owners.length > 0 ? t.owners : "No owners yet" }</p>
+                                <p>
+                                    <span className="font-bold"> Tag: </span>
+                                    {Array.isArray(t.tags)
+                                        ? t.tags.map(tag => tag.name).join(", ")
+                                        : "No tag yet"}
+                                </p>
+                                <p> <span className="font-bold"> Owners: </span>  {t.owners.length > 0 ? t.owners.map(o => o.name).join(", ") : "No owners yet" }</p>
                                 <p> <span className="font-bold"> Team: </span> {t.team.name}</p>
                                 <p> <span className="font-bold"> Due Date: </span>  {calcDueDate(t.timeToComplete)}</p>
                                 <AdminOnly onClick={(e)=>e.stopPropagation()}>
@@ -183,15 +191,36 @@ export function ProjectManagement(){
 export function ProjectForm(){
 
     const {id} = useParams();
+    const navigate = useNavigate();
+    const fetcher = useFetcher();
+    const navigation = useNavigation();
+    const isSubmitting = fetcher.state === "submitting";
+    const actionData = useActionData();
+
+    console.log(fetcher.data)
+
+    useEffect(()=>{
+        if(fetcher.data?.success){
+            toast.success(fetcher.data.message);
+            const timer = setTimeout(()=>{
+                navigate('/projects')
+            }, 500);
+
+            return ()=> clearTimeout(timer);
+        }
+
+    }, [fetcher.data, navigate]);
+
     console.log("id: ", id);
 
     const isEdit = !!id;
-    console.log("isedit: ", isEdit);
+    console.log("isEdit: ", isEdit);
 
     const project  = useLoaderData();
+
     console.log("project:  ",project);
 
-    const projectToUpdate = project?.project?.find(p=>p._id === id) || [];
+    const projectToUpdate = project?.project;
     console.log("projectToUpdate:  ", projectToUpdate);
 
     const [formData, setFormData] = useState({
@@ -211,57 +240,60 @@ export function ProjectForm(){
 
     return(
         <>
-            <Form method="post" className="container mx-auto p-4 md:p-8">
-                <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-                    
-                    <label 
-                        htmlFor="name" 
-                        className="block text-gray-700"
-                    >
-                        Project Name:
-                    </label>
-                    <input 
-                        type="text"
-                        name="name"
-                        id="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Task name"
-                    />
+            <Modal onClose={()=>navigate("/projects")}>
+                    <fetcher.Form method="post" action="/projects" className="container mx-auto p-4 md:p-8">
+                        <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
+                            
+                            <label 
+                                htmlFor="name" 
+                                className="block text-gray-700"
+                            >
+                                Project Name:
+                            </label>
+                            <input 
+                                type="text"
+                                name="name"
+                                id="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                                placeholder="Task name"
+                            />
 
-                    <label 
-                        htmlFor="description" 
-                        className="block text-gray-700"
-                    >
-                        Project Description:
-                    </label>
-                    <input 
-                        type="text"
-                        name="description"
-                        id="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Task name"
-                    />
+                            <label 
+                                htmlFor="description" 
+                                className="block text-gray-700"
+                            >
+                                Project Description:
+                            </label>
+                            <input 
+                                type="text"
+                                name="description"
+                                id="description"
+                                value={formData.description}
+                                onChange={handleChange}
+                                required
+                                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                                placeholder="Task name"
+                            />
 
-                    {isEdit && (
-                        <input type="hidden" name="id" value={id} />
-                    )}
+                            {isEdit && (
+                                <input type="hidden" name="id" value={id} />
+                            )}
 
-                    <button 
-                        type="submit" 
-                        name="intent" 
-                        value={ isEdit ? "update" : "create" }
-                        className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
-                    > 
-                        {isEdit ? "Edit Project" : "Create Project"} 
-                    </button>
-                </div>
-            </Form>
+                            <button 
+                                type="submit" 
+                                name="intent" 
+                                disabled={isSubmitting}
+                                value={ isEdit ? "update" : "create" }
+                                className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
+                            > 
+                                {isSubmitting ? "Processing..." : (isEdit ? "Edit Project" : "Create Project")}
+                            </button>
+                        </div>
+                    </fetcher.Form>
+            </Modal>
         </>
     )
 }

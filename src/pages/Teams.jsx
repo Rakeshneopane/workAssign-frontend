@@ -1,7 +1,9 @@
-import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams } from "react-router-dom";
-import { useState } from "react";
+import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams, useFetcher } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { AdminOnly } from "../components/AdminGuard";
 import { calcDueDate } from "../api/calculateDueDate";
+import { Modal } from "../components/ModalOverlays";
+import { toast } from "react-toastify";
 
 export function TeamSection() {
     const { teams } = useRouteLoaderData("root");
@@ -27,7 +29,7 @@ export function TeamSection() {
                 </div>
 
                 {/* Card Grid Layout */}
-                {!teams || teams.teams.length > 0 ? (
+                {teams?.teams && teams.teams.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {teams?.teams.map((team, index) => (
                             <div 
@@ -150,13 +152,13 @@ export function TeamManagement() {
 
                                     <p>
                                         <span className="font-bold">Tag: </span>
-                                        {t.tags}
+                                        {t.tags?.length > 0 ? t.tags.join(", ") : "None"}
                                     </p>
 
                                     <p>
                                         <span className="font-bold">Owners: </span>
-                                        {t.owners.length > 0
-                                            ? t.owners.join(", ")
+                                        {t.owners?.length > 0 
+                                            ? t.owners.map(o => o.name || o).join(", ") 
                                             : "No owners yet"}
                                     </p>
 
@@ -207,14 +209,33 @@ export function Teams(){
 export function TeamForm(){
 
     const {id} = useParams();
+    const navigate = useNavigate();
 
     const isEdit = !!id;
 
-    const team = useLoaderData();
+    const loaderData = useLoaderData();
 
-    console.log("Team: ", team, "id: ", id);
+    const fetcher = useFetcher();
+    
+    const isSubmitting = fetcher.state === "submitting";
 
-    const teamToUpdate = team?.teams
+    console.log(fetcher.data)
+
+    useEffect(()=>{
+        if(fetcher.data?.success){
+            toast.success(fetcher.data.message);
+            const timer = setTimeout(()=>{
+                navigate('/teams')
+            }, 500);
+
+            return ()=> clearTimeout(timer);
+        }
+
+    }, [fetcher.data, navigate]);
+
+    console.log("Team: ", loaderData, "id: ", id);
+
+    const teamToUpdate = isEdit ? loaderData?.teams : null;
 
     console.log("teamToUpdate: ", teamToUpdate);
 
@@ -235,56 +256,59 @@ export function TeamForm(){
 
     return(
         <>
-            <Form method="post" className="container mx-auto p-4 md:p-8">
-                <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-                    <label 
-                        htmlFor="name" 
-                        className="block text-gray-700"
-                    >
-                        Team Name:
-                    </label>
-                    <input 
-                        type="text"
-                        name="name"
-                        id="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Task name"
-                    />
+            <Modal onClose={()=> navigate("/teams")}>
+                <fetcher.Form method="post" action="/teams" className="container mx-auto p-4 md:p-8">
+                    <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
+                        <label 
+                            htmlFor="name" 
+                            className="block text-gray-700"
+                        >
+                            Team Name:
+                        </label>
+                        <input 
+                            type="text"
+                            name="name"
+                            id="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Task name"
+                        />
 
-                    <label 
-                        htmlFor="description" 
-                        className="block text-gray-700"
-                    >
-                        Team Description:
-                    </label>
-                    <input 
-                        type="text"
-                        name="description"
-                        id="description"
-                        value={formData.description}
-                        onChange={handleChange}
-                        required
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Task name"
-                    />
+                        <label 
+                            htmlFor="description" 
+                            className="block text-gray-700"
+                        >
+                            Team Description:
+                        </label>
+                        <input 
+                            type="text"
+                            name="description"
+                            id="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            placeholder="Task name"
+                        />
 
-                    {isEdit && (
-                        <input type="hidden" name="id" value={id} />
-                    )}
+                        {isEdit && (
+                            <input type="hidden" name="id" value={id} />
+                        )}
 
-                    <button 
-                        type="submit" 
-                        name="intent" 
-                        value={ isEdit ? "update" : "create" } 
-                        className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
-                    > 
-                        { isEdit ? "Edit Team" : "Create Team" }
-                    </button>
-                </div>
-            </Form>
+                        <button 
+                            type="submit" 
+                            name="intent" 
+                            value={ isEdit ? "update" : "create" } 
+                            className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
+                        > 
+                            { isEdit ? "Edit Team" : "Create Team" }
+                        </button>
+                    </div>
+                </fetcher.Form>
+            </Modal>
+            
         </>
     )
 }
