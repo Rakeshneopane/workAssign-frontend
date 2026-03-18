@@ -93,7 +93,7 @@ export function TeamManagement() {
     const loaderData = useLoaderData();
     const { tasks } = useRouteLoaderData("root");
 
-    const team = loaderData.teams;
+    const team = loaderData.teams || [];
 
     console.log("Team:", team);
 
@@ -152,7 +152,9 @@ export function TeamManagement() {
 
                                     <p>
                                         <span className="font-bold">Tag: </span>
-                                        {t.tags?.length > 0 ? t.tags.join(", ") : "None"}
+                                        {Array.isArray(t.tags) && t.tags.length > 0
+                                            ? t.tags.map(tag => tag.name ?? tag).join(", ")
+                                            : "None"}
                                     </p>
 
                                     <p>
@@ -301,6 +303,7 @@ export function TeamForm(){
                             type="submit" 
                             name="intent" 
                             value={ isEdit ? "update" : "create" } 
+                            disabled={isSubmitting}
                             className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
                         > 
                             { isEdit ? "Edit Team" : "Create Team" }

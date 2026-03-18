@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 export function TaskSection(){
 
     const { tasks } = useRouteLoaderData("root");
-    const tasksData = tasks.tasks;
+    const tasksData = tasks.tasks || [];
     console.log("tasksData ", tasksData);
 
     const navigate = useNavigate();
@@ -110,12 +110,11 @@ export function TaskSection(){
                                         </td>
                                         <AdminOnly>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button className="text-blue-400 hover:text-blue-600 mr-3">
-                                                    Edit
-                                                </button>
-                                                <button className="text-red-600 hover:text-red-900">
-                                                    Delete
-                                                </button>
+                                                <button onClick={() => navigate(`/tasks/${task._id}/edit`)}>Edit</button>
+                                                <Form method="post" action="/tasks" style={{ display: "inline" }}>
+                                                    <input type="hidden" name="id" value={task._id} />
+                                                    <button type="submit" name="intent" value="delete">Delete</button>
+                                                </Form>
                                             </td>
                                         </AdminOnly>  
                                     </tr>
@@ -143,7 +142,7 @@ export function TaskManagement() {
     
     const loaderData = useLoaderData();
     
-    const task = loaderData.tasks; 
+    const task = loaderData.tasks || []; 
 
     console.log("Task:", task);
 
@@ -164,9 +163,11 @@ export function TaskManagement() {
                                 {task.name}
                             </h2>
 
-                            <p>
-                                <span className="font-bold">Tag: </span>
-                                {task.tags}
+                           <p>
+                                <span className="font-bold">Tags: </span>
+                                {Array.isArray(task.tags) && task.tags.length > 0
+                                    ? task.tags.map(t => t.name ?? t).join(", ")
+                                    : "No tags"}
                             </p>
 
                             <p>
@@ -176,9 +177,9 @@ export function TaskManagement() {
 
                             <p>
                                 <span className="font-bold">Owners: </span>
-                                {task.owners?.length > 0
-                                    ? task.owners.join(", ")
-                                    : "No owners yet"}
+                                { task.owners?.length > 0 
+                                    ? task.owners.map(o => o.name ?? o).join(", ") 
+                                    : "No owners yet" }
                             </p>
 
                             <p>

@@ -50,6 +50,9 @@ async function rootLoader() {
         };
     } catch (error) {
         console.error("Root Loader Error:", error);
+        if(error.message === "Unauthorized"){
+            return redirect("/login");
+        }
         // DO NOT return null. 
         return { projects: [], tasks: [], teams: [], tags: [], users: [] };
     }

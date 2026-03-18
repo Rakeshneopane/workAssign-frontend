@@ -15,9 +15,9 @@ const apiFetch = async (url, options ={})=>{
             },  
         });
 
-        if(response.status === 401){
+        if(response.status === 401 && token){
             localStorage.removeItem("authToken");
-            throw redirect("/login");
+            throw new Error("Unauthorized");
         }
 
         // Check Content-Type header before parsing
@@ -26,11 +26,11 @@ const apiFetch = async (url, options ={})=>{
             console.error("Received non-JSON response:", await response.text());
             throw new Error("Server did not return JSON. Check your API URL.");
         }
-        
+
         if(!response.ok){
             const errorData = await response.json();
             console.log("Error response:", errorData);
-            throw new Error("API error");
+            throw new Error(errorData.error || errorData.message || "API error");
         }
 
         return await response.json();

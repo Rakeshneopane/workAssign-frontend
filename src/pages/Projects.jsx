@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 export function ProjectSection() {
     const navigate = useNavigate();
     const { projects } = useRouteLoaderData("root");
-    const projectsData = projects?.projects; 
+    const projectsData = projects?.projects || []; 
 
     const [ filterTag, setFilterTag ] = useState("");
     console.log(filterTag);
@@ -106,13 +106,13 @@ export function ProjectManagement(){
     const navigate = useNavigate();
     const { project } = useLoaderData();
 
-    const {tasks} = useRouteLoaderData("root");
+    const { tasks } = useRouteLoaderData("root");
     
     const projectId = project._id;
 
     console.log("projectId: ", projectId, "project: ", project);
 
-    const tasksOnProject = tasks.tasks.filter(t=>t.project._id === projectId);
+    const tasksOnProject = (tasks.tasks || []).filter(t=>t.project._id === projectId);
 
     console.log("task on project: ", tasksOnProject);
     return(
@@ -193,9 +193,7 @@ export function ProjectForm(){
     const {id} = useParams();
     const navigate = useNavigate();
     const fetcher = useFetcher();
-    const navigation = useNavigation();
     const isSubmitting = fetcher.state === "submitting";
-    const actionData = useActionData();
 
     console.log(fetcher.data)
 
@@ -220,7 +218,7 @@ export function ProjectForm(){
 
     console.log("project:  ",project);
 
-    const projectToUpdate = project?.project;
+    const projectToUpdate = project?.project || [];
     console.log("projectToUpdate:  ", projectToUpdate);
 
     const [formData, setFormData] = useState({
