@@ -19,32 +19,40 @@ import loginAction from './actions/loginAction.jsx';
 import taskAction from './actions/taskAction.jsx';
 import teamAction from './actions/teamAction.jsx';
 
-
 async function rootLoader() {
-    console.log("ROOT LOADER STARTED");
-
     const token = localStorage.getItem("authToken");
-    if(!token){
-        return redirect("/login");
-    }
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
+    if(!token) return redirect("/login");
 
     try {
-        const [ projects, tasks, teams, users, tags ]= await Promise.all([
+        // Define common requests
+        const requests = [
             apiFetch(`${BASE_URL}/api/projects`),
             apiFetch(`${BASE_URL}/api/tasks`),
             apiFetch(`${BASE_URL}/api/teams`),
-            apiFetch(`${BASE_URL}/api/auth/all`),
             apiFetch(`${BASE_URL}/api/tags`),
-        ]);
+        ];
 
-        console.log(projects, tasks, teams, users, tags);
+        // Only add the users request if the logged-in user is an admin
+        if (user.role === "admin") {
+            requests.push(apiFetch(`${BASE_URL}/api/auth/all`));
+        }
 
-        return { projects, tasks, teams, users, tags };
+        const [projects, tasks, teams, tags, users] = await Promise.all(requests);
+
+        return { 
+            projects, 
+            tasks, 
+            teams, 
+            tags, 
+            users: users || [] // Fallback for non-admins
+        };
     } catch (error) {
-        console.log(error);
-        return null;
+        console.error("Root Loader Error:", error);
+        // DO NOT return null. 
+        return { projects: [], tasks: [], teams: [], tags: [], users: [] };
     }
-
 }
 
 async function authLoader() {
