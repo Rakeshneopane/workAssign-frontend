@@ -33,7 +33,7 @@ async function createTask(formData) {
         body: JSON.stringify(task),
     });
     
-    return { success : "Task created successfully!" }
+    return { success: true, message: "Task created successfully!" };
 } 
 
 async function updateTask(formData) {

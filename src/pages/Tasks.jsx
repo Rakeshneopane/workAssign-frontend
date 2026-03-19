@@ -1,4 +1,4 @@
-import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams, useFetcher, useNavigation } from "react-router-dom";
+import { useLoaderData, Link, Form, useNavigate, useRouteLoaderData, useParams, useFetcher} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { calcDueDate } from "../api/calculateDueDate";
 import { AdminOnly } from "../components/AdminGuard";
@@ -12,6 +12,7 @@ export function TaskSection(){
     console.log("tasksData ", tasksData);
 
     const navigate = useNavigate();
+    const fetcher = useFetcher();
 
     const [ filterTag, setFilterTag ] = useState("");
     console.log(filterTag);
@@ -23,9 +24,26 @@ export function TaskSection(){
 
     console.log("filteredData: ",filteredData);
 
+    const isSubmitting = fetcher.state === "submitting";
+
+    useEffect(()=>{
+        if(fetcher.data?.success){
+            toast.success(fetcher.data.message);
+            const timer = setTimeout(()=>{
+                navigate('/tasks')
+            }, 1500);
+
+            return ()=> clearTimeout(timer);
+        }
+        if (fetcher.data?.error) {
+            toast.error(fetcher.data.message);
+        }
+
+    }, [fetcher.data, navigate]);
+
   return (
-        <div className="p-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="">
+            <div className="max-w-7xl py-6">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold text-blue-600">My Tasks</h1>
                     <div className="flex items-center gap-4">
@@ -36,13 +54,18 @@ export function TaskSection(){
                             onChange={(e)=>{setFilterTag(e.target.value)}}
                         >
                             <option value="">Filter</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
+                            <option value={"to-do"}>To Do</option>                   
+                            <option value={"in-progress"}>In progress</option>                    
+                            <option value={"completed"}>Completed</option>                    
+                            <option value={"blocked"}>Blocked</option>
+
                         </select>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">
-                            <Link to={"/tasks/create"}>+ New Task</Link>
-                            
-                        </button>
+                        <AdminOnly>
+                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">
+                                <Link to={"/tasks/create"}>+ New Task</Link>
+                            </button>
+                        </AdminOnly>
+                        
                     </div>
                </div>
             
@@ -109,12 +132,28 @@ export function TaskSection(){
                                             {calcDueDate(task.timeToComplete)}
                                         </td>
                                         <AdminOnly>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <button onClick={() => navigate(`/tasks/${task._id}/edit`)}>Edit</button>
-                                                <Form method="post" action="/tasks" style={{ display: "inline" }}>
+                                            <td 
+                                            onClick={(e)=>e.stopPropagation()}
+                                                className="px-6 py-4 whitespace-nowrap text-sm font-medium"
+                                            >
+                                                <button 
+                                                    className="text-blue-500 hover:text-blue-700 font-medium text-sm me-2"
+                                                    onClick={() => navigate(`/tasks/${task._id}/edit`)}
+                                                >
+                                                    Edit
+                                                </button>
+
+                                                <fetcher.Form method="post" action="/tasks" style={{ display: "inline" }}  onClick={(e)=>e.stopPropagation()}>
                                                     <input type="hidden" name="id" value={task._id} />
-                                                    <button type="submit" name="intent" value="delete">Delete</button>
-                                                </Form>
+                                                    <button 
+                                                        type="submit" 
+                                                        name="intent" 
+                                                        value="delete"
+                                                        className="text-red-500 hover:text-red-700 font-medium text-sm ms-2"
+                                                    >
+                                                        { isSubmitting ? "Deleting..." : "Delete" }
+                                                        </button>
+                                                </fetcher.Form>
                                             </td>
                                         </AdminOnly>  
                                     </tr>
@@ -230,11 +269,13 @@ export function TaskForm(){
             toast.success(fetcher.data.message);
             const timer = setTimeout(()=>{
                 navigate("/tasks");
-            },500);
+            }, 1500);
             
             return ()=>clearTimeout(timer);
         }
-        
+        if (fetcher.data?.error) {
+            toast.error(fetcher.data.message);
+        }        
     },[fetcher.data, navigate]);
 
     const editTask = loaderData.tasks;
@@ -332,7 +373,7 @@ export function TaskForm(){
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                             required
                         >
-                            <option value={""}>Select Owners</option>
+                            {/* <option value={""}>Select Owners</option> */}
                             {users?.users.map((owner,index)=>(
                                 <option value={owner._id} key={index}> {owner.name} </option>  
                             ))}
@@ -380,7 +421,7 @@ export function TaskForm(){
                             required
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md "
                         >
-                            <option value={""}>Select tags</option>
+                            {/* <option value={""}>Select tags</option> */}
                             {tags?.tags.map((tag,index)=>(
                                 <option value={tag._id} key={index}> {tag.name} </option>
                             ))}

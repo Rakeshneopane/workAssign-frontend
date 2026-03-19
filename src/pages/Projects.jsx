@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 export function ProjectSection() {
     const navigate = useNavigate();
+    const fetcher = useFetcher();
     const { projects } = useRouteLoaderData("root");
     const projectsData = projects?.projects || []; 
 
@@ -17,6 +18,22 @@ export function ProjectSection() {
     const filteredData = (results && results.length > 0) ? results : projectsData;
 
     console.log("filteredData: ",filteredData);
+
+    const isSubmitting = fetcher.state === "submitting";
+
+    useEffect(()=>{
+        if(fetcher.data?.success){
+            toast.success(fetcher.data.message);
+            const timer = setTimeout(()=>{
+                navigate('/projects')
+            }, 500);
+
+            return ()=> clearTimeout(timer);
+        }
+        if (fetcher.data?.error) {
+            toast.error(fetcher.data.message);
+        }
+    }, [fetcher.data, navigate]);
 
     return (
         
@@ -31,15 +48,19 @@ export function ProjectSection() {
                             onChange={(e)=>{setFilterTag(e.target.value)}}
                         >
                             <option value="">All Projects</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
+                            <option value={"to-do"}>To Do</option>                   
+                            <option value={"in-progress"}>In progress</option>                    
+                            <option value={"completed"}>Completed</option>                    
+                            <option value={"blocked"}>Blocked</option>
                         </select>
-                        <Link 
-                            to="/projects/create" 
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
-                        >
-                            + New Project
-                        </Link>                       
+                        <AdminOnly>
+                            <Link 
+                                to="/projects/create" 
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
+                            >
+                                + New Project
+                            </Link>  
+                        </AdminOnly>               
                     </div>
                 </div>
 
@@ -73,16 +94,16 @@ export function ProjectSection() {
                                         >
                                             Edit
                                         </button>
-                                        <Form method="post" action="/projects" onClick={(e)=>e.stopPropagation()}>
+                                        <fetcher.Form method="post" action="/projects" onClick={(e)=>e.stopPropagation()}>
                                             <input type="hidden" name="id" value={project._id} />                                           
                                             <button 
                                                 type="submit"
                                                 name="intent"
                                                 value="delete"
                                                 className="text-red-500 hover:text-red-700 font-medium text-sm">
-                                                Delete
+                                                { isSubmitting ? "Deleting..." : "Delete" }
                                             </button>
-                                        </Form>
+                                        </fetcher.Form>
                                     </div>
                                 </AdminOnly>
                             </div>
@@ -206,7 +227,9 @@ export function ProjectForm(){
 
             return ()=> clearTimeout(timer);
         }
-
+        if (fetcher.data?.error) {
+            toast.error(fetcher.data.message);
+        }
     }, [fetcher.data, navigate]);
 
     console.log("id: ", id);

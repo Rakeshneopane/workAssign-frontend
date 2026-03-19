@@ -44,4 +44,6 @@ async function deleteTeam(formData) {
     await apiFetch(`${BASE_URL}/api/teams/${id}`, {
         method: "DELETE",
     });
+
+    return { success: true, message: "Team deleted successfully!" };
 } 

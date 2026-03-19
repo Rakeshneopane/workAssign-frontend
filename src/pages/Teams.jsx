@@ -10,21 +10,40 @@ export function TeamSection() {
     console.log("teams: ",teams);
 
     const navigate = useNavigate();
+    const fetcher = useFetcher();
+
+    const isSubmitting = fetcher.state === "submitting";
+
+    useEffect(()=>{
+        if(fetcher.data?.success){
+            toast.success(fetcher.data.message);
+            const timer = setTimeout(()=>{
+                navigate('/teams')
+            }, 500);
+
+            return ()=> clearTimeout(timer);
+        }
+        if (fetcher.data?.error) {
+            toast.error(fetcher.data.message);
+        }
+    }, [fetcher.data, navigate]);
 
     return (
-        <div className="p-6">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="">
+            <div className="max-w-7xl py-6">
                 
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-blue-600">My Teams</h1>
                     <div className="flex items-center gap-4">
-                        <Link 
-                            to="/team/create" 
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
-                        >
-                            + New Team
-                        </Link>
+                        <AdminOnly>
+                            <Link 
+                                to="/team/create" 
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
+                            >
+                                + New Team
+                            </Link>
+                        </AdminOnly>
                     </div>
                 </div>
 
@@ -59,7 +78,7 @@ export function TeamSection() {
                                         >
                                             Edit
                                         </button>
-                                        <Form method="post" action="/teams" onClick={(e)=>e.stopPropagation()}>
+                                        <fetcher.Form method="post" action="/teams" onClick={(e)=>e.stopPropagation()}>
                                             <input type="hidden" name="id" value={team._id} />
                                             <button 
                                                 type="submit"
@@ -67,9 +86,9 @@ export function TeamSection() {
                                                 value={"delete"}
                                                 className="text-red-500 hover:text-red-700 font-medium text-sm"
                                             >
-                                            Delete
+                                            {isSubmitting ? "Deleting..." : "Delete"}
                                         </button>
-                                        </Form>
+                                        </fetcher.Form>
                                         
                                     </div>
                                 </AdminOnly>                                
@@ -232,7 +251,9 @@ export function TeamForm(){
 
             return ()=> clearTimeout(timer);
         }
-
+        if (fetcher.data?.error) {
+            toast.error(fetcher.data.message);
+        }
     }, [fetcher.data, navigate]);
 
     console.log("Team: ", loaderData, "id: ", id);
@@ -275,7 +296,7 @@ export function TeamForm(){
                             onChange={handleChange}
                             required
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Task name"
+                            placeholder="Team name"
                         />
 
                         <label 
@@ -292,7 +313,7 @@ export function TeamForm(){
                             onChange={handleChange}
                             required
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Task name"
+                            placeholder="Team Description"
                         />
 
                         {isEdit && (

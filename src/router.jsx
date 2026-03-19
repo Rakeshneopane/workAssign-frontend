@@ -12,6 +12,7 @@ import { Tasks, TaskForm, TaskSection, TaskManagement }  from './pages/Tasks.jsx
 import { TeamSection, Teams, TeamForm, TeamManagement } from "./pages/Teams.jsx"
 import { Reports } from "./pages/Reports.jsx";
 import { Settings } from './pages/Setting.jsx';
+import { ErrorBoundary } from './components/ErrorBoundary.jsx';
 
 import projectAction from './actions/projectActions.jsx';
 import signupAction from './actions/signupAction.jsx';
@@ -72,18 +73,21 @@ const router = createBrowserRouter([
         element: <Signup />,
         loader: authLoader,
         action: signupAction, 
+        errorElement: <ErrorBoundary />,
     },
     {
         path: "/login",
         element: <Login />,
         loader: authLoader,
         action: loginAction,
+        errorElement: <ErrorBoundary />,
     },
     {
         path: "/",
         element: <App />,
         loader: rootLoader,
         hydrateFallbackElement: <p>Loading app... </p>,
+        errorElement: <ErrorBoundary />,
         id: "root",
 
 
@@ -91,16 +95,23 @@ const router = createBrowserRouter([
         { 
             index: true, 
             element: <Home />,
+            
         },
         {
             path: "/projects",
             element: <ProjectSection />,
             loader: async () => { return apiFetch(`${BASE_URL}/api/projects`); },
             action: projectAction,
+            
             children: [
                 {
                     path: "create", 
                     element: <ProjectForm />,
+                },
+                {
+                    path: ":id",                    // ← add this, was a sibling before
+                    element: <ProjectManagement />,
+                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/projects/${params.id}`),
                 },
                 {
                     path: ":id/edit",
@@ -110,59 +121,52 @@ const router = createBrowserRouter([
                 
             ]
         },
-        {
-            path: "projects/:id",
-            element: <ProjectManagement />,
-            loader: async ({params})=>{ return apiFetch(`${BASE_URL}/api/projects/${params.id}`);},
-        },
+        
   
         {
             path: "/tasks",
             element: <Tasks />,
-            loader: async () => { return apiFetch(`${BASE_URL}/api/tasks`); },
-            action: taskAction,
-        },
-        {
-            path: "/tasks/:id",
-            element: <TaskManagement />,
-            loader: async ({params}) => { return apiFetch(`${BASE_URL}/api/tasks/${params.id}`); },
-            action: taskAction,
-        },
-        {
-            path: "/tasks/:id/edit",
-            element: <TaskForm />,
-            loader: async ({params}) => { return apiFetch(`${BASE_URL}/api/tasks/${params.id}`); },
-            action: taskAction,
-        },
-        {
-            path: "/tasks/create",
-            element: <TaskForm />,
-            loader: async () => { return apiFetch(`${BASE_URL}/api/tasks`); },
-            action: taskAction,
-        },
-        
-        {
-            path: "/team/create",
-            element: <TeamForm />,
-            action: teamAction,
-        },
-        {
-            path: "/team/:id",
-            element: <TeamManagement />,
-            loader: async ({params})=>{ return apiFetch(`${BASE_URL}/api/teams/${params.id}`);} ,
-            action: teamAction,
-        },
-         {
-            path: "/team/:id/edit",
-            element: <TeamForm />,
-            loader: async ({params})=>{ return apiFetch(`${BASE_URL}/api/teams/${params.id}`);} ,
-            action: teamAction,
+            loader: async () => apiFetch(`${BASE_URL}/api/tasks`),
+            action: taskAction, // shared by all children via fetcher.Form action="/tasks"
+            children: [
+                {
+                    path: "create",                          // /tasks/create  ← before :id
+                    element: <TaskForm />,
+                    loader: async () => apiFetch(`${BASE_URL}/api/tasks`),
+                },
+                {
+                    path: ":id",                             // /tasks/:id
+                    element: <TaskManagement />,
+                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/tasks/${params.id}`),
+                },
+                {
+                    path: ":id/edit",                        // /tasks/:id/edit
+                    element: <TaskForm />,
+                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/tasks/${params.id}`),
+                },
+            ],
         },
         {
             path: "/teams",
             element: <Teams />,
-            loader: async () => { return apiFetch(`${BASE_URL}/api/teams`); },
+            loader: async () => apiFetch(`${BASE_URL}/api/teams`),
             action: teamAction,
+            children: [
+                {
+                    path: "create",
+                    element: <TeamForm />,
+                },
+                {
+                    path: ":id",
+                    element: <TeamManagement />,
+                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/teams/${params.id}`),
+                },
+                {
+                    path: ":id/edit",
+                    element: <TeamForm />,
+                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/teams/${params.id}`),
+                },
+            ],
         },
         {
             path: "/reports",
@@ -170,6 +174,7 @@ const router = createBrowserRouter([
             loader: async () => await Promise.all([
                 apiFetch(`${BASE_URL}/api/report/last-week`),
                 apiFetch(`${BASE_URL}/api/report/pending`),
+                apiFetch(`${BASE_URL}/api/report/closed-tasks?groupBy=project`)
             ]),
         },
         {
