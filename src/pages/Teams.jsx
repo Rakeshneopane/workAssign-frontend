@@ -103,7 +103,7 @@ export function TeamSection() {
 export function TeamManagement() {
     const navigate = useNavigate();
     const loaderData = useLoaderData();
-    const { tasks } = useRouteLoaderData("root");
+    const { tasks, tags } = useRouteLoaderData("root");
 
     const team = loaderData.teams || [];
 
@@ -164,9 +164,14 @@ export function TeamManagement() {
 
                                     <p>
                                         <span className="font-bold">Tag: </span>
-                                        {Array.isArray(t.tags) && t.tags.length > 0
-                                            ? t.tags.map(tag => tag.name ?? tag).join(", ")
-                                            : "None"}
+                                        {t.tags.map((tagId) => {
+                                        const tagObj = tags.tags.find((t) => t._id === tagId);
+                                        return tagObj ? (
+                                            <span key={tagId}>
+                                                {tagObj.name}{", "}
+                                            </span>
+                                        ) : null;
+                                    })}
                                     </p>
 
                                     <p>

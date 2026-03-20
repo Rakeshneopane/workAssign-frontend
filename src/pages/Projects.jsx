@@ -101,7 +101,7 @@ export function ProjectManagement(){
     const navigate = useNavigate();
     const { project } = useLoaderData();
 
-    const { tasks } = useRouteLoaderData("root");
+    const { tasks, tags } = useRouteLoaderData("root");
     
     const projectId = project._id;
 
@@ -145,9 +145,14 @@ export function ProjectManagement(){
                                 <p> <span className="font-bold"> Task #{index+1}: </span> {t.name} </p>
                                 <p>
                                     <span className="font-bold"> Tag: </span>
-                                    {Array.isArray(t.tags)
-                                        ? t.tags.map(tag => tag.name).join(", ")
-                                        : "No tag yet"}
+                                    {t.tags.map((tagId) => {
+                                        const tagObj = tags.tags.find((t) => t._id === tagId);
+                                        return tagObj ? (
+                                            <span key={tagId}>
+                                                {tagObj.name}{", "}
+                                            </span>
+                                        ) : null;
+                                    })}
                                 </p>
                                 <p> <span className="font-bold"> Owners: </span>  {t.owners.length > 0 ? t.owners.map(o => o.name).join(", ") : "No owners yet" }</p>
                                 <p> <span className="font-bold"> Team: </span> {t.team.name}</p>
