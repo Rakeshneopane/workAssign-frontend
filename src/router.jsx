@@ -6,10 +6,10 @@ import App from './App.jsx'
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
 import Home from "./pages/Home"
-import { ProjectSection, ProjectForm,ProjectManagement } from './pages/Projects.jsx'
-import { Tasks, TaskForm, TaskSection, TaskManagement }  from './pages/Tasks.jsx';
+import { ProjectSection, ProjectForm, ProjectManagement } from './pages/Projects.jsx'
+import { TaskForm, TaskSection, TaskManagement }  from './pages/Tasks.jsx';
 
-import { TeamSection, Teams, TeamForm, TeamManagement } from "./pages/Teams.jsx"
+import { TeamSection, TeamForm, TeamManagement } from "./pages/Teams.jsx"
 import { Reports } from "./pages/Reports.jsx";
 import { Settings } from './pages/Setting.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary.jsx';
@@ -109,11 +109,6 @@ const router = createBrowserRouter([
                     element: <ProjectForm />,
                 },
                 {
-                    path: ":id",                    // ← add this, was a sibling before
-                    element: <ProjectManagement />,
-                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/projects/${params.id}`),
-                },
-                {
                     path: ":id/edit",
                     element: <ProjectForm />,
                     loader:async ({params})=>{ return apiFetch(`${BASE_URL}/api/projects/${params.id}`);},
@@ -121,23 +116,21 @@ const router = createBrowserRouter([
                 
             ]
         },
-        
-  
+        {
+            path: "/projects/:id",
+            element: <ProjectManagement />,
+            loader: async ({ params }) => apiFetch(`${BASE_URL}/api/projects/${params.id}`),
+        },      
         {
             path: "/tasks",
-            element: <Tasks />,
+            element: <TaskSection />,
             loader: async () => apiFetch(`${BASE_URL}/api/tasks`),
-            action: taskAction, // shared by all children via fetcher.Form action="/tasks"
+            action: taskAction, 
             children: [
                 {
-                    path: "create",                          // /tasks/create  ← before :id
+                    path: "create",                       // /tasks/create
                     element: <TaskForm />,
                     loader: async () => apiFetch(`${BASE_URL}/api/tasks`),
-                },
-                {
-                    path: ":id",                             // /tasks/:id
-                    element: <TaskManagement />,
-                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/tasks/${params.id}`),
                 },
                 {
                     path: ":id/edit",                        // /tasks/:id/edit
@@ -147,26 +140,31 @@ const router = createBrowserRouter([
             ],
         },
         {
+            path: "/tasks/:id",                             // /tasks/:id management
+            element: <TaskManagement />,
+            loader: async ({ params }) => apiFetch(`${BASE_URL}/api/tasks/${params.id}`),
+        },
+        {
             path: "/teams",
-            element: <Teams />,
+            element: <TeamSection />,
             loader: async () => apiFetch(`${BASE_URL}/api/teams`),
             action: teamAction,
             children: [
                 {
                     path: "create",
                     element: <TeamForm />,
-                },
-                {
-                    path: ":id",
-                    element: <TeamManagement />,
-                    loader: async ({ params }) => apiFetch(`${BASE_URL}/api/teams/${params.id}`),
-                },
+                },                
                 {
                     path: ":id/edit",
                     element: <TeamForm />,
                     loader: async ({ params }) => apiFetch(`${BASE_URL}/api/teams/${params.id}`),
                 },
             ],
+        },
+        {
+            path: "/teams/:id",
+            element: <TeamManagement />,
+            loader: async ({ params }) => apiFetch(`${BASE_URL}/api/teams/${params.id}`),
         },
         {
             path: "/reports",

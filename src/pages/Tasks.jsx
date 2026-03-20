@@ -1,9 +1,10 @@
-import { useLoaderData, Link, Form, useNavigate, useRouteLoaderData, useParams, useFetcher} from "react-router-dom";
+import { useLoaderData, Link, Form, useNavigate, useRouteLoaderData, useParams, useFetcher, Outlet} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { calcDueDate } from "../api/calculateDueDate";
 import { AdminOnly } from "../components/AdminGuard";
 import { Modal } from "../components/ModalOverlays";
 import { toast } from "react-toastify";
+import { DeleteButton } from "../components/DeleteButton.jsx";
 
 export function TaskSection(){
 
@@ -12,7 +13,6 @@ export function TaskSection(){
     console.log("tasksData ", tasksData);
 
     const navigate = useNavigate();
-    const fetcher = useFetcher();
 
     const [ filterTag, setFilterTag ] = useState("");
     console.log(filterTag);
@@ -24,24 +24,7 @@ export function TaskSection(){
 
     console.log("filteredData: ",filteredData);
 
-    const isSubmitting = fetcher.state === "submitting";
-
-    useEffect(()=>{
-        if(fetcher.data?.success){
-            toast.success(fetcher.data.message);
-            const timer = setTimeout(()=>{
-                navigate('/tasks')
-            }, 1500);
-
-            return ()=> clearTimeout(timer);
-        }
-        if (fetcher.data?.error) {
-            toast.error(fetcher.data.message);
-        }
-
-    }, [fetcher.data, navigate]);
-
-  return (
+    return (
         <div className="">
             <div className="max-w-7xl py-6">
                 <div className="flex justify-between items-center mb-6">
@@ -60,11 +43,12 @@ export function TaskSection(){
                             <option value={"blocked"}>Blocked</option>
 
                         </select>
-                        <AdminOnly>
-                            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition">
+                            <button 
+                                onClick={(e)=>e.stopPropagation()} 
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
+                            >
                                 <Link to={"/tasks/create"}>+ New Task</Link>
-                            </button>
-                        </AdminOnly>
+                            </button>                        
                         
                     </div>
                </div>
@@ -88,12 +72,10 @@ export function TaskSection(){
                                     </th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                         Due Date
-                                    </th>
-                                    <AdminOnly>
+                                    </th>                                    
                                         <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                                             Actions
-                                        </th>
-                                    </AdminOnly>
+                                        </th>                                    
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -123,6 +105,10 @@ export function TaskSection(){
                                                     ? 'bg-green-100 text-green-800' 
                                                     : task.status === 'in-progress'
                                                     ? 'bg-yellow-100 text-yellow-800'
+                                                    : task.status === 'blocked'
+                                                    ? 'bg-red-100 text-red-800'
+                                                    : task.status === 'to-do'
+                                                    ? 'bg-blue-100 text-blue-800'
                                                     : 'bg-gray-100 text-gray-800'
                                             }`}>
                                                 {task.status}
@@ -130,8 +116,7 @@ export function TaskSection(){
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                             {calcDueDate(task.timeToComplete)}
-                                        </td>
-                                        <AdminOnly>
+                                        </td>                                        
                                             <td 
                                             onClick={(e)=>e.stopPropagation()}
                                                 className="px-6 py-4 whitespace-nowrap text-sm font-medium"
@@ -143,37 +128,19 @@ export function TaskSection(){
                                                     Edit
                                                 </button>
 
-                                                <fetcher.Form method="post" action="/tasks" style={{ display: "inline" }}  onClick={(e)=>e.stopPropagation()}>
-                                                    <input type="hidden" name="id" value={task._id} />
-                                                    <button 
-                                                        type="submit" 
-                                                        name="intent" 
-                                                        value="delete"
-                                                        className="text-red-500 hover:text-red-700 font-medium text-sm ms-2"
-                                                    >
-                                                        { isSubmitting ? "Deleting..." : "Delete" }
-                                                        </button>
-                                                </fetcher.Form>
-                                            </td>
-                                        </AdminOnly>  
+                                                <DeleteButton id={task._id} action="/tasks" />
+                                            </td>                                        
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
+                    <Outlet />
                 </div>
             </div>
         </div>
-  )
-};
-
-export function Tasks(){
-    return(
-        <>
-        <TaskSection />
-        </>
     )
-}
+};
 
 export function TaskManagement() {
 
@@ -182,6 +149,9 @@ export function TaskManagement() {
     const loaderData = useLoaderData();
     
     const task = loaderData.tasks || []; 
+
+    const { tags } = useRouteLoaderData("root");
+    console.log("tags: ", tags.tags)
 
     console.log("Task:", task);
 
@@ -204,9 +174,14 @@ export function TaskManagement() {
 
                            <p>
                                 <span className="font-bold">Tags: </span>
-                                {Array.isArray(task.tags) && task.tags.length > 0
-                                    ? task.tags.map(t => t.name ?? t).join(", ")
-                                    : "No tags"}
+                                    {task.tags.map((tagId) => {
+                                        const tagObj = tags.tags.find((t) => t._id === tagId);
+                                        return tagObj ? (
+                                            <span key={tagId}>
+                                                {tagObj.name}{", "}
+                                            </span>
+                                        ) : null;
+                                    })}
                             </p>
 
                             <p>

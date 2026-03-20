@@ -43,7 +43,7 @@ export default function SideBar() {
             ["Projects", "/projects"],
             ["Teams", "/teams"],
             ["Reports", "/reports"],
-            ["Setting", "/setting"]
+            // ["Setting", "/setting"]
           ].map(([label, path]) => (
             <li key={path}>
               <NavLink

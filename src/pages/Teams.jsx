@@ -1,9 +1,10 @@
-import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams, useFetcher } from "react-router-dom";
+import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams, useFetcher, Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { AdminOnly } from "../components/AdminGuard";
 import { calcDueDate } from "../api/calculateDueDate";
 import { Modal } from "../components/ModalOverlays";
 import { toast } from "react-toastify";
+import { DeleteButton } from "../components/DeleteButton";
 
 export function TeamSection() {
     const { teams } = useRouteLoaderData("root");
@@ -12,7 +13,10 @@ export function TeamSection() {
     const navigate = useNavigate();
     const fetcher = useFetcher();
 
-    const isSubmitting = fetcher.state === "submitting";
+    const deletingId = fetcher.state === "submitting" 
+    && fetcher.formData?.get("intent") === "delete"
+    ? fetcher.formData?.get("id")
+    : null;
 
     useEffect(()=>{
         if(fetcher.data?.success){
@@ -36,14 +40,12 @@ export function TeamSection() {
                 <div className="flex justify-between items-center mb-10">
                     <h1 className="text-3xl font-bold text-blue-600">My Teams</h1>
                     <div className="flex items-center gap-4">
-                        <AdminOnly>
                             <Link 
-                                to="/team/create" 
+                                to="/teams/create" 
                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
                             >
                                 + New Team
-                            </Link>
-                        </AdminOnly>
+                            </Link>                       
                     </div>
                 </div>
 
@@ -54,7 +56,7 @@ export function TeamSection() {
                             <div 
                                 key={team._id || index} 
                                 className="bg-gray-100 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex flex-col justify-between"
-                                onClick={()=>navigate(`/team/${team._id}`)}
+                                onClick={()=>navigate(`/teams/${team._id}`)}
                             >
                                 <div>
                                     <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -74,26 +76,17 @@ export function TeamSection() {
                                         <button 
                                             intent="update"
                                             className="text-blue-500 hover:text-blue-700 font-medium text-sm"
-                                            onClick={()=>navigate(`/team/${team._id}/edit`)}
+                                            onClick={()=>navigate(`/teams/${team._id}/edit`)}
                                         >
                                             Edit
                                         </button>
-                                        <fetcher.Form method="post" action="/teams" onClick={(e)=>e.stopPropagation()}>
-                                            <input type="hidden" name="id" value={team._id} />
-                                            <button 
-                                                type="submit"
-                                                name="intent"
-                                                value={"delete"}
-                                                className="text-red-500 hover:text-red-700 font-medium text-sm"
-                                            >
-                                            {isSubmitting ? "Deleting..." : "Delete"}
-                                        </button>
-                                        </fetcher.Form>
+                                        <DeleteButton id={team._id} action="/teams" />
                                         
                                     </div>
                                 </AdminOnly>                                
                             </div>
                         ))}
+                        <Outlet />
                     </div>
                     ):(
                     /* Empty State */
@@ -146,7 +139,7 @@ export function TeamManagement() {
 
                             <AdminOnly>
                                 <button
-                                    onClick={() => navigate(`/team/${team._id}/edit`)}
+                                    onClick={() => navigate(`/teams/${team._id}/edit`)}
                                     className="mt-4 text-blue-800 text-xl font-bold"
                                 >
                                     Edit Team
@@ -217,15 +210,6 @@ export function TeamManagement() {
         </div>
     );
 }
-
-export function Teams(){
-    return(
-        <>
-        <TeamSection />
-        </>
-    )
-}
-
 
 export function TeamForm(){
 

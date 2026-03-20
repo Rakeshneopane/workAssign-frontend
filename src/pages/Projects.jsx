@@ -4,6 +4,7 @@ import { AdminOnly } from "../components/AdminGuard";
 import { calcDueDate } from "../api/calculateDueDate";
 import { Modal } from "../components/ModalOverlays";
 import { toast } from "react-toastify";
+import { DeleteButton } from "../components/DeleteButton.jsx";
 
 export function ProjectSection() {
     const navigate = useNavigate();
@@ -18,22 +19,6 @@ export function ProjectSection() {
     const filteredData = (results && results.length > 0) ? results : projectsData;
 
     console.log("filteredData: ",filteredData);
-
-    const isSubmitting = fetcher.state === "submitting";
-
-    useEffect(()=>{
-        if(fetcher.data?.success){
-            toast.success(fetcher.data.message);
-            const timer = setTimeout(()=>{
-                navigate('/projects')
-            }, 500);
-
-            return ()=> clearTimeout(timer);
-        }
-        if (fetcher.data?.error) {
-            toast.error(fetcher.data.message);
-        }
-    }, [fetcher.data, navigate]);
 
     return (
         
@@ -53,14 +38,12 @@ export function ProjectSection() {
                             <option value={"completed"}>Completed</option>                    
                             <option value={"blocked"}>Blocked</option>
                         </select>
-                        <AdminOnly>
                             <Link 
                                 to="/projects/create" 
                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
                             >
                                 + New Project
-                            </Link>  
-                        </AdminOnly>               
+                            </Link>               
                     </div>
                 </div>
 
@@ -94,16 +77,7 @@ export function ProjectSection() {
                                         >
                                             Edit
                                         </button>
-                                        <fetcher.Form method="post" action="/projects" onClick={(e)=>e.stopPropagation()}>
-                                            <input type="hidden" name="id" value={project._id} />                                           
-                                            <button 
-                                                type="submit"
-                                                name="intent"
-                                                value="delete"
-                                                className="text-red-500 hover:text-red-700 font-medium text-sm">
-                                                { isSubmitting ? "Deleting..." : "Delete" }
-                                            </button>
-                                        </fetcher.Form>
+                                        <DeleteButton id={project._id} action="/projects" />
                                     </div>
                                 </AdminOnly>
                             </div>
