@@ -13,14 +13,16 @@ export function TaskSection(){
     console.log("tasksData ", tasksData);
 
     const navigate = useNavigate();
-
     const [ filterTag, setFilterTag ] = useState("");
+    
     console.log(filterTag);
 
     const results = tasksData.filter(t=>t.status === filterTag);
     console.log("results ",results);
 
-    const filteredData = (results && results.length > 0) ? results : tasksData;
+    const filteredData = filterTag 
+        ? tasksData.filter(t => t.status === filterTag) 
+        : tasksData;
 
     console.log("filteredData: ",filteredData);
 
@@ -35,6 +37,7 @@ export function TaskSection(){
                             id="filter"
                             className="px-3 py-2 outline-none bg-white border border-gray-300 rounded-md shadow-sm text-sm"
                             onChange={(e)=>{setFilterTag(e.target.value)}}
+                            value={filterTag}
                         >
                             <option value="">Filter</option>
                             <option value={"to-do"}>To Do</option>                   
@@ -92,7 +95,7 @@ export function TaskSection(){
                                             {task.name}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                            {task.owners.map((owner, idx) => (
+                                            {(task.owners || []).map((owner, idx) => (
                                                 <span key={idx}>
                                                     {owner.name}
                                                     {idx < task.owners.length - 1 ? ', ' : ''}
@@ -174,7 +177,7 @@ export function TaskManagement() {
 
                            <p>
                                 <span className="font-bold">Tags: </span>
-                                    {task.tags.map((tagId) => {
+                                    {task.tags?.map((tagId) => {
                                         const tagObj = tags.tags.find((t) => t._id === tagId);
                                         return tagObj ? (
                                             <span key={tagId}>
@@ -229,12 +232,19 @@ export function TaskManagement() {
 }
 
 export function TaskForm(){
+    const { id } = useParams();
 
-    const loaderData = useLoaderData();
-    
+    console.log("id: ", id);
+
+    const isEdit = !!id;
+
     const fetcher = useFetcher();
     
     const navigate = useNavigate();
+
+    const loaderData = useLoaderData() || {};
+    const editTask = loaderData.tasks;
+ 
     const isSubmitting = fetcher.state === "submitting";
     
     console.log("loaderData:", loaderData);
@@ -253,15 +263,7 @@ export function TaskForm(){
         }        
     },[fetcher.data, navigate]);
 
-    const editTask = loaderData.tasks;
-
-    console.log("Tasks: ", editTask);
-
-    const { id } = useParams();
-
-    console.log("id: ", id);
-
-    const isEdit = !!id;
+    console.log("Tasks: ", editTask);    
 
     const { projects, tasks, teams, users, tags } = useRouteLoaderData("root");
 
@@ -269,9 +271,9 @@ export function TaskForm(){
         id: id ?? "",
         name: editTask?.name ?? "",
         project: editTask?.project?._id ?? "",
-        owners: editTask?.owners?.map(o => typeof o === 'object' ? o._id : o) ?? [],
+        owners: (editTask?.owners || []).map(o => typeof o === 'object' ? o._id : o) ?? [],
         team: editTask?.team?._id ?? "",
-        tags: editTask?.tags?.map(t => typeof t === 'object' ? t._id : t) ?? [],
+        tags: (editTask?.tags || []).map(t => typeof t === 'object' ? t._id : t) ?? [],
         timeToComplete: editTask?.timeToComplete ?? "",
         status: editTask?.status ?? "",
     });
@@ -323,7 +325,7 @@ export function TaskForm(){
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                         >
                             <option value={""}>Select Project</option>
-                            {projects?.projects.map((project,index)=>(
+                            {projects?.projects?.map((project,index)=>(
                                 <option value={project._id} key={index}> {project.name} </option>
                             ))}
                         </select>
@@ -349,7 +351,7 @@ export function TaskForm(){
                             required
                         >
                             {/* <option value={""}>Select Owners</option> */}
-                            {users?.users.map((owner,index)=>(
+                            {users?.users?.map((owner,index)=>(
                                 <option value={owner._id} key={index}> {owner.name} </option>  
                             ))}
                         </select>
