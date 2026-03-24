@@ -14,9 +14,9 @@ export default function SearchBox(){
         const debounceFn = setTimeout(()=>{
             if(search.length >= 1 ){
                 const allData = [
-                    ...projects?.projects.map(p=>({...p, type: "project", url: `/project/${p._id}`})),
+                    ...projects?.projects.map(p=>({...p, type: "project", url: `/projects/${p._id}`})),
                     ...tasks?.tasks.map(t=>({...t, type: "task", url: `/tasks/${t._id}`})),
-                    ...teams?.teams.map(tm=>({...tm, type: "team", url: `/team/${tm._id}`}))  
+                    ...teams?.teams.map(tm=>({...tm, type: "team", url: `/teams/${tm._id}`}))  
                 ];
 
                 console.log("All Data", allData);
