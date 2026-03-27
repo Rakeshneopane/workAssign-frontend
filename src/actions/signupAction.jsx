@@ -21,8 +21,6 @@ export default async function signupAction({request}){
 
     } catch (error) {
         console.log("Error occured while signing up, Please try again.", error);
-        throw error;
+        return { error: error?.message || "Signup failed. Please try again." };
     }
-    
-    return
 }

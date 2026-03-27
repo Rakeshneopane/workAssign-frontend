@@ -22,7 +22,7 @@ export default async function loginAction({ request }) {
         return redirect("/");
     } catch (error) {
         console.error("Login error:", error);
-        return {error: "Login failed. Please try again."}
+        return { error: error?.message || "Login failed. Please try again." };
         
     }
 }
