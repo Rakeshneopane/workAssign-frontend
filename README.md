@@ -220,7 +220,6 @@ Restart both dev servers after updating `.env`.
 
 ## Contact
 
-For bugs, feedback, or feature requests:
-
-- Email: `rakeshkumarneopane@gmail.com`
+For bugs, feedback, or feature requests, please reach out to: 
+- Email: `rakeshkumarneopane@gmail.com` or `lucasneopane123@gmail.com`
 - LinkedIn: `https://linkedin.com/in/rakesh-neopane`
