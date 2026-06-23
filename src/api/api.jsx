@@ -5,12 +5,14 @@ const apiFetch = async (url, options ={})=>{
         console.log("URL: ", url);
 
         const token = localStorage.getItem("authToken");
+        const isOAuth = token === "cookie-auth";
 
         const response = await fetch(url,{
             ...options,
+            credentials: isOAuth ? "include" : "same-origin",
             headers: {
                 "Content-Type":"application/json",
-                ...(token && {"Authorization": `Bearer ${token}`}),
+                ...(!isOAuth && token && {"Authorization": `Bearer ${token}`}),
                 ...options.headers,
             },  
         });

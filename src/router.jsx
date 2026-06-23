@@ -83,6 +83,24 @@ const router = createBrowserRouter([
         errorElement: <ErrorBoundary />,
     },
     {
+        path: "/oauth-callback",
+        loader: async () => {
+            const res = await fetch(`${BASE_URL}/api/auth/me`, {
+                credentials: "include"
+            });
+            if (!res.ok) return redirect("/login");
+            
+            const data = await res.json();
+            
+            localStorage.setItem("authToken", "cookie-auth");
+            localStorage.setItem("authMethod", "oauth");
+            localStorage.setItem("user", JSON.stringify(data.user));
+            
+            return redirect("/");
+        },
+        element: <p>Signing you in...</p>
+    },
+    {
         path: "/",
         element: <App />,
         loader: rootLoader,

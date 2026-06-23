@@ -1,13 +1,21 @@
-import {useRouteError, Link} from 'react-router-dom';
+import {useRouteError, Link, isRouteErrorResponse } from 'react-router-dom';
 
 export function ErrorBoundary(){
     const error = useRouteError();
 
+    const title = isRouteErrorResponse(error)
+        ? `${error.status} - ${error.statusText}`
+        : "Something went wrong";
+
+    const message = isRouteErrorResponse(error)
+        ? error.data
+        : error?.message || "An unexpected error occurred.";
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen text-center p-6">
-            <h1 className="text-3xl font-bold text-red-600 mb-2">Something went wrong</h1>
+            <h1 className="text-3xl font-bold text-red-600 mb-2">{title} Something went wrong</h1>
             <p className="text-gray-600 mb-6">
-                {error?.message || "An unexpected error occurred."}
+                {message}
             </p>
             <Link 
                 to="/" 

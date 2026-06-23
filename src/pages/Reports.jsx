@@ -137,11 +137,11 @@ export function Reports() {
     }, {});
 
     const closedTasksList = closedTasks?.tasks || [];
-    const closedLabels = closedTasksList.map(t => getNameById(t._id, groupBy));
-    const closedData = closedTasksList.map(t => t.totalClosed);
+    const closedLabels = closedTasksList?.map(t => getNameById(t._id, groupBy));
+    const closedData = closedTasksList?.map(t => t.totalClosed);
 
     // 2. Main Empty State Check (Logic: Do we have anything at all to show?)
-    const hasAnyData = (lastWeek?.count > 0) || (pending?.totalTasks > 0) || (closedTasksList.length > 0);
+    const hasAnyData = (lastWeek?.count > 0) || (pending?.totalTasks > 0) || (closedTasksList?.length > 0);
 
     if (!hasAnyData) {
         return (

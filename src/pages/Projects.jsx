@@ -107,7 +107,7 @@ export function ProjectManagement(){
 
     console.log("projectId: ", projectId, "project: ", project);
 
-    const tasksOnProject = (tasks.tasks || []).filter(t=>t.project._id === projectId);
+    const tasksOnProject = (tasks.tasks || []).filter(t=>t.project?._id === projectId);
 
     console.log("task on project: ", tasksOnProject);
     return(

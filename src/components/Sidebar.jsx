@@ -1,13 +1,30 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-
+import { BASE_URL } from '../api/config.jsx';
 export default function SideBar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = () =>{
-    localStorage.removeItem("authToken");
-    navigate("/login");
+  const handleLogout = async () =>{
+    const isOAuth = localStorage.getItem("authMethod") === "oauth";
+
+     try {
+        await fetch(`${BASE_URL}/api/auth/logout`, {
+            method: "POST",
+            credentials: isOAuth ? "include" : "same-origin",
+            headers: { 
+                "Content-Type": "application/json",
+                ...(!isOAuth && { "Authorization": `Bearer ${localStorage.getItem("authToken")}` })
+            }
+        });
+    } catch (err) {
+        // proceed even if backend call fails
+    } finally {
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("authMethod");
+        localStorage.removeItem("user");
+        navigate("/login");
+    }
   };
 
   return (
