@@ -48,9 +48,14 @@ export default function SideBar() {
       >
         <NavLink
           to="/"
-          className="block text-center font-bold text-blue-800 p-3 text-xl"
+          className="flex items-center justify-center gap-2 font-bold text-blue-800 p-3 text-xl"
         >
-          WorkAssign
+          <img
+            src="/workAssign.svg"
+            alt="WorkAssign"
+            className="w-10 h-10"
+          />
+          <span className="p-1"> WorkAssign </span>
         </NavLink>
 
         <ul className="flex flex-col text-center gap-2 mt-4">
