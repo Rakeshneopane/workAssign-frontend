@@ -1,6 +1,7 @@
 import { useFetcher } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
+import { FiTrash2 } from "react-icons/fi";
 
 export function DeleteButton({ id, action }) {
     const fetcher = useFetcher({ key: `delete-${id}` });
@@ -43,11 +44,11 @@ export function DeleteButton({ id, action }) {
         <fetcher.Form
             method="post"
             action={action}
-            style={{ display: "inline" }}
+            className="inline-block"
             onClick={(e) => e.stopPropagation()}
         >
             <input type="hidden" name="id" value={id} />
-            <button
+            {/* <button
                 type="submit"
                 name="intent"
                 value="delete"
@@ -55,6 +56,20 @@ export function DeleteButton({ id, action }) {
                 className="text-red-500 hover:text-red-700 font-medium text-sm ms-2 disabled:opacity-50"
             >
                 {isArtificiallyLoading ? "Deleting..." : "Delete"}
+            </button> */}
+            <button
+                type="submit"
+                name="intent"
+                value="delete"
+                disabled={isArtificiallyLoading}
+                title="Delete task"
+                className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600 transition hover:bg-red-100 hover:text-red-700 disabled:opacity-50"
+            >
+                {isArtificiallyLoading ? (
+                    <span className="text-xs">...</span>
+                ) : (
+                    <FiTrash2 size={18} />
+                )}
             </button>
         </fetcher.Form>
     );

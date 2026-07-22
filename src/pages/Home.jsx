@@ -1,14 +1,5 @@
-import {TaskSection} from "./Tasks"
-import { ProjectSection } from "./Projects"
-import { TeamSection } from "./Teams"
+import DashboardOverview from "../components/DashboardOverview";
 
-export default function Home(){
-  
-  return (
-        <>
-          <ProjectSection />
-          <TaskSection />
-          <TeamSection />
-        </>
-  )
+export default function Home() {
+    return <DashboardOverview />;
 }

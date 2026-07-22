@@ -1,48 +1,227 @@
 # WorkAssign Task Management System
 
-A full-stack task management application that helps teams organize work by projects, teams, tags, and owners.
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=node.js)
+![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose-darkgreen?logo=mongodb)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38BDF8?logo=tailwindcss)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+
+A modern full-stack task management platform for teams to organize projects, collaborate efficiently, and track progress in real time.
+
+The task management application that helps teams organize work by projects, teams, tags, and owners.
 Users can sign up/login, create and track tasks, update progress, and generate simple reports from a secure dashboard.
 
 Built with a React frontend, Node.js/Express backend, and MongoDB database.
 
+---
+
+## Table of Contents
+
+- Demo
+- Screenshots
+- Features
+- Tech Stack
+- Architecture
+- Installation
+- Environment Variables
+- API
+- Deployment
+- Future Improvements
+- Contact
+- License
+
+---
+
 ## Demo Link
 
-- Live Demo:  https://work-assign-frontend.vercel.app/ <br>
+- Live Demo:  https://work-assign-jt.vercel.app <br>
 - Backend API: https://work-assign-backend.vercel.app/
+
+---
+
+## Repositories
+
+- **Frontend:** https://github.com/Rakeshneopane/WorkAssign
+- **Backend:** https://github.com/Rakeshneopane/workAssign-backend
+
+---
 
 ## Quick Start
 
+### 1. Clone the repositories
+
 ```bash
-git clone <your-repository-url>
-cd Work-project/backend
+# Clone the frontend
+git clone https://github.com/Rakeshneopane/WorkAssign.git
+
+# Clone the backend
+git clone https://github.com/Rakeshneopane/workAssign-backend.git
+```
+
+### 2. Install dependencies
+
+**Backend**
+
+```bash
+cd workAssign-backend
 npm install
+```
+
+**Frontend**
+
+```bash
+cd ../WorkAssign/frontend/my-work-assignment
+npm install
+```
+
+### 3. Configure environment variables
+
+Create the required `.env` files for both the frontend and backend.
+
+#### Frontend Environment Variables
+
+Create a `.env` file in:
+`frontend/my-work-assignment/.env`
+
+```env
+VITE_BASE_URI=http://localhost:3000
+```
+
+#### Backend Environment Variables
+
+Create a `.env` file in:
+`workAssign-backend/.env`
+
+```env
+MONGO_URI=your_mongodb_atlas_connection_string
+SECRET_KEY=your_jwt_secret
+PORT=3000
+```
+
+Restart both dev servers after updating `.env`.
+
+### 4. Run the application
+
+Open two terminals.
+
+**Terminal 1 (Backend)**
+
+```bash
+cd workAssign-backend
 npm run dev
 ```
 
-Open a second terminal:
+**Terminal 2 (Frontend)**
 
 ```bash
-cd Work-project/frontend/my-work-assignment
-npm install
+cd WorkAssign/frontend/my-work-assignment
 npm run dev
 ```
 
-## Technologies
+> **Note:** The frontend and backend are maintained in separate repositories. The frontend communicates with the backend API via REST endpoints.
 
-- React JS
+---
+
+## Screenshots
+
+### Landing Page
+
+![LandingPage](./src/assets/image1.png)
+
+### Dashboard
+
+![Dashboard](./src/assets/image2.png)
+
+### Projects
+
+![Projects](./src/assets/image3.png)
+
+### Tasks
+
+![Tasks](./src/assets/image4.png)
+
+### Teams
+
+![Teams](./src/assets/image5.png)
+
+### Reports
+
+![Reports](./src/assets/image6.png)
+
+### Landing Features
+
+![Features](./src/assets/landing2.png)
+
+### Tech Section
+
+![Tech](./src/assets/landing3.png)
+
+### Footer
+
+![Footer](./src/assets/landing4.png)
+
+### Project Modal
+
+![Modal](./src/assets/modal1.png)
+
+### Task Modal
+
+![Modal](./src/assets/modal2.png)
+
+---
+
+## Tech Stack
+
+### Frontend
+
+- React 19
 - React Router DOM
+- Tailwind CSS
+- JavaScript (ES6+)
+
+### Backend
+
 - Node.js
 - Express.js
-- MongoDB + Mongoose
-- JavaScript (ES6+)
-- Joi validation
-- JWT authentication
-- Tailwind CSS
+- JWT Authentication
+- Joi Validation
+
+### Database
+
+- MongoDB
+- Mongoose
+
+### Authentication
+
+- Email/Password
+- Google OAuth
+- JWT
+
+---
+
+## Architecture
+
+```text
+React + Tailwind CSS
+        │
+        ▼
+React Router
+        │
+        ▼
+Node.js + Express
+        │
+        ▼
+MongoDB Atlas
+```
+
+---
 
 ## Demo Video
 
 Watch a walkthrough covering major features:
-- Loom Video Link: `Loom video link here`
+- Loom Video Link: [Walkthough](https://www.loom.com/share/)
+
+---
 
 ## Features
 
@@ -51,6 +230,17 @@ Watch a walkthrough covering major features:
 - User signup and login
 - JWT-based protected API access
 - Role-aware behavior (admin/user)
+- Google OAuth login
+- Secure session handling
+
+### Dashboard
+
+- Workspace overview
+- Project statistics
+- Recent projects
+- Upcoming tasks
+- Quick actions
+- Activity feed
 
 ### Task Management
 
@@ -80,29 +270,19 @@ Watch a walkthrough covering major features:
 - Pending tasks with estimated remaining days
 - Closed tasks grouped by `team`, `owners`, or `project`
 
-## Environment Setup
+### UI
 
-### Frontend Environment Variables
+- Responsive design for desktop, tablet, and mobile
+- Modern SaaS-inspired interface
+- Clean dashboard with intuitive navigation
 
-Create a `.env` file in:
-`frontend/my-work-assignment/.env`
+---
 
-```env
-VITE_BASE_URI=http://localhost:3000
-```
+## Deployment
 
-### Backend Environment Variables
-
-Create a `.env` file in:
-`backend/.env`
-
-```env
-MONGO_URI=your_mongodb_connection_string
-secretKey=your_jwt_secret
-PORT=3000
-```
-
-Restart both dev servers after updating `.env`.
+- **Frontend:** Vercel
+- **Backend:** Vercel
+- **Database:** MongoDB Atlas
 
 ## API Endpoints Used
 
@@ -201,14 +381,7 @@ Restart both dev servers after updating `.env`.
 }
 ```
 
-## Screenshots
-
-![Login](./src/assets/image.png)
-![Dashboard](./src/assets/image1.png)
-![Search](./src/assets/image2.png)
-![Task](./src/assets/image3.png)
-![Reports](./src/assets/image4.png)
-
+---
 
 ## Future Improvements
 
@@ -218,8 +391,16 @@ Restart both dev servers after updating `.env`.
 - Pagination and advanced filtering
 - CSV import/export for tasks and users
 
+---
+
 ## Contact
 
 For bugs, feedback, or feature requests, please reach out to: 
 - Email: rakeshkumarneopane@gmail.com or lucasneopane123@gmail.com
 - LinkedIn: https://linkedin.com/in/rakesh-neopane
+
+---
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

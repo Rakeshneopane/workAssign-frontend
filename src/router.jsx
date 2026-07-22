@@ -5,7 +5,8 @@ import apiFetch from './api/api.jsx';
 import App from './App.jsx'
 import Login from './pages/Login.jsx';
 import Signup from './pages/Signup.jsx';
-import Home from "./pages/Home"
+import Home from "./pages/Home.jsx";
+import Landing from "./pages/Landing.jsx";
 import { ProjectSection, ProjectForm, ProjectManagement } from './pages/Projects.jsx'
 import { TaskForm, TaskSection, TaskManagement }  from './pages/Tasks.jsx';
 
@@ -62,12 +63,16 @@ async function rootLoader() {
 async function authLoader() {
     const token = localStorage.getItem("authToken");
     if(token){
-        return redirect("/");
+        return redirect("/dashboard");
     }
     return null;
 }
 
 const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Landing />,
+    },
     {
         path: "/signup",
         element: <Signup />,
@@ -96,12 +101,12 @@ const router = createBrowserRouter([
             localStorage.setItem("authMethod", "oauth");
             localStorage.setItem("user", JSON.stringify(data.user));
             
-            return redirect("/");
+            return redirect("/dashboard");
         },
         element: <p>Signing you in...</p>
     },
     {
-        path: "/",
+        path: "/dashboard",
         element: <App />,
         loader: rootLoader,
         hydrateFallbackElement: <p>Loading app... </p>,
@@ -116,7 +121,7 @@ const router = createBrowserRouter([
             
         },
         {
-            path: "/projects",
+            path: "projects",
             element: <ProjectSection />,
             loader: async () => { return apiFetch(`${BASE_URL}/api/projects`); },
             action: projectAction,
@@ -135,12 +140,12 @@ const router = createBrowserRouter([
             ]
         },
         {
-            path: "/projects/:id",
+            path: "projects/:id",
             element: <ProjectManagement />,
             loader: async ({ params }) => apiFetch(`${BASE_URL}/api/projects/${params.id}`),
         },      
         {
-            path: "/tasks",
+            path: "tasks",
             element: <TaskSection />,
             loader: async () => apiFetch(`${BASE_URL}/api/tasks`),
             action: taskAction, 
@@ -158,12 +163,12 @@ const router = createBrowserRouter([
             ],
         },
         {
-            path: "/tasks/:id",                             // /tasks/:id management
+            path: "tasks/:id",                             // /tasks/:id management
             element: <TaskManagement />,
             loader: async ({ params }) => apiFetch(`${BASE_URL}/api/tasks/${params.id}`),
         },
         {
-            path: "/teams",
+            path: "teams",
             element: <TeamSection />,
             loader: async () => apiFetch(`${BASE_URL}/api/teams`),
             action: teamAction,
@@ -180,12 +185,12 @@ const router = createBrowserRouter([
             ],
         },
         {
-            path: "/teams/:id",
+            path: "teams/:id",
             element: <TeamManagement />,
             loader: async ({ params }) => apiFetch(`${BASE_URL}/api/teams/${params.id}`),
         },
         {
-            path: "/reports",
+            path: "reports",
             element: <Reports />,
             loader: async () => await Promise.all([
                 apiFetch(`${BASE_URL}/api/report/last-week`),
@@ -194,7 +199,7 @@ const router = createBrowserRouter([
             ]),
         },
         {
-            path: "/setting",
+            path: "setting",
             element: <Settings />, 
         },
         ]

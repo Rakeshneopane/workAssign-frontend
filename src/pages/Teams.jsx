@@ -1,101 +1,200 @@
-import { useLoaderData, Link, Form, useActionData, useNavigate, useRouteLoaderData, useParams, useFetcher, Outlet } from "react-router-dom";
+import { 
+    useLoaderData, 
+    Link, 
+    Form, 
+    useActionData, 
+    useNavigate, 
+    useRouteLoaderData, 
+    useParams, 
+    useFetcher, 
+    Outlet 
+} from "react-router-dom";
+import StatCard from "../components/StatCard.jsx"
+import {
+    FiUsers,
+    FiClipboard,
+    FiCheckCircle,
+    FiArrowLeft,
+} from "react-icons/fi";
+
+// import {
+//     Link,
+//     useNavigate,
+//     useRouteLoaderData,
+//     useFetcher,
+//     Outlet,
+// } from "react-router-dom";
+
 import { useState, useEffect } from "react";
 import { AdminOnly } from "../components/AdminGuard";
 import { calcDueDate } from "../api/calculateDueDate";
-import { Modal } from "../components/ModalOverlays";
+import { Modal, ModalBody, ModalHeader, ModalFooter } from "../components/Modal";
 import { toast } from "react-toastify";
 import { DeleteButton } from "../components/DeleteButton";
 
 export function TeamSection() {
-    const { teams } = useRouteLoaderData("root");
-    console.log("teams: ",teams);
+    const { teams, tasks } = useRouteLoaderData("root");
+
+    //console.log("teams: ",teams);
 
     const navigate = useNavigate();
-    const fetcher = useFetcher();
 
-    const deletingId = fetcher.state === "submitting" 
-    && fetcher.formData?.get("intent") === "delete"
-    ? fetcher.formData?.get("id")
-    : null;
+    const [query, setQuery] = useState("");
 
-    useEffect(()=>{
-        if(fetcher.data?.success){
-            toast.success(fetcher.data.message);
-            const timer = setTimeout(()=>{
-                navigate('/teams')
-            }, 500);
+    // const fetcher = useFetcher();
 
-            return ()=> clearTimeout(timer);
-        }
-        if (fetcher.data?.error) {
-            toast.error(fetcher.data.message);
-        }
-    }, [fetcher.data, navigate]);
+    // const deletingId = fetcher.state === "submitting" 
+    // && fetcher.formData?.get("intent") === "delete"
+    // ? fetcher.formData?.get("id")
+    // : null;
 
+    // useEffect(()=>{
+    //     if(fetcher.data?.success){
+    //         toast.success(fetcher.data.message);
+    //         const timer = setTimeout(()=>{
+    //             navigate('/teams')
+    //         }, 500);
+
+    //         return ()=> clearTimeout(timer);
+    //     }
+    //     if (fetcher.data?.error) {
+    //         toast.error(fetcher.data.message);
+    //     }
+    // }, [fetcher.data, navigate]);
+
+    const filteredTeams = teams?.teams.filter((team) => {
+        const search = query.toLowerCase().trim();
+
+        return (
+            team.name.toLowerCase().includes(search) ||
+            team.description?.toLowerCase().includes(search)
+        );
+    });
     return (
-        <div className="">
-            <div className="max-w-7xl py-6">
+            <div className="space-y-10 rounded-2xl border border-slate-200 bg-white shadow-sm p-6">  
                 
                 {/* Header Section */}
-                <div className="flex justify-between items-center mb-10">
-                    <h1 className="text-3xl font-bold text-blue-600">My Teams</h1>
-                    <div className="flex items-center gap-4">
-                            <Link 
-                                to="/teams/create" 
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-md"
-                            >
-                                + New Team
-                            </Link>                       
-                    </div>
+                <div className="mb-8">
+
+                    {/* <h1 className="text-4xl font-bold text-slate-900">
+                        Teams
+                    </h1> */}
+
+                    <p className="mt-2 text-slate-500">
+                        Manage your teams and collaborate efficiently.
+                    </p>
+
+                </div>
+
+                <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search teams..."
+                        className="w-full rounded-xl border border-slate-200 px-4 py-3 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 lg:w-96"
+                    />
+
+                    <Link
+                        to="/dashboard/teams/create"
+                        className="rounded-xl bg-blue-600 px-6 py-3 text-center font-medium text-white shadow-sm transition hover:bg-blue-700"
+                    >
+                        + New Team
+                    </Link>
+
                 </div>
 
                 {/* Card Grid Layout */}
-                {teams?.teams && teams.teams.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {teams?.teams.map((team, index) => (
-                            <div 
-                                key={team._id || index} 
-                                className="bg-gray-100 rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex flex-col justify-between"
-                                onClick={()=>navigate(`/teams/${team._id}`)}
-                            >
-                                <div>
-                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                        {team.name}
-                                    </h3>
-                                    <p className="text-gray-600 text-sm line-clamp-3">
-                                        {team.description || "No description provided for this project."}
-                                    </p>
-                                </div>
+                {filteredTeams && filteredTeams.length > 0? (
+                    <div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredTeams?.map((team, index) => {
+                                const teamTasks = tasks.tasks.filter(
+                                    task => task.team?._id === team._id
+                                );
 
-                                {/* Action Buttons */}
-                                <AdminOnly>
-                                    <div 
-                                        className="mt-6 pt-4 border-t border-gray-100 flex justify-end gap-4"
-                                        onClick={(e)=>e.stopPropagation()}    
-                                    >
-                                        <button 
-                                            intent="update"
-                                            className="text-blue-500 hover:text-blue-700 font-medium text-sm"
-                                            onClick={()=>navigate(`/teams/${team._id}/edit`)}
-                                        >
-                                            Edit
-                                        </button>
-                                        <DeleteButton id={team._id} action="/teams" />
-                                        
+                                const memberCount = new Set(
+                                    teamTasks.flatMap(
+                                        task => task.owners?.map(owner => owner._id) || []
+                                    )
+                                ).size;
+                                return (
+                                <div 
+                                    key={team._id || index} 
+                                    className="rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow flex flex-col justify-between"
+                                    onClick={()=>navigate(`/dashboard/teams/${team._id}`)}
+                                >
+                                    <div>
+
+                                        <h3 className="text-xl font-semibold text-slate-900">
+                                            {team.name}
+                                        </h3>
+
+                                        <p className="mt-2 text-sm text-slate-500">
+                                            {team.description || "No description provided."}
+                                        </p>
+
+                                        <div className="mt-6 space-y-3">
+
+                                            <div className="flex items-center gap-2 text-slate-600">
+
+                                                <FiUsers className="text-blue-600" />
+
+                                                <span>{memberCount} Members</span>
+
+                                            </div>
+
+                                            <div className="flex items-center gap-2 text-slate-600">
+
+                                                <FiClipboard className="text-green-600" />
+
+                                                <span>{teamTasks.length} Tasks</span>
+
+                                            </div>
+
+                                        </div>
+
                                     </div>
-                                </AdminOnly>                                
-                            </div>
-                        ))}
-                        <Outlet />
+
+                                    {/* Action Buttons */}
+                                    <AdminOnly>
+                                        <div 
+                                            className="mt-6 flex items-center justify-end gap-2 border-t border-slate-200 pt-4"
+                                            //className="mt-6 pt-4 border-t border-gray-100 flex justify-end gap-4"
+                                            onClick={(e)=>e.stopPropagation()}    
+                                        >
+                                            <button 
+                                                intent="update"
+                                                className="text-blue-500 hover:text-blue-700 font-medium text-sm"
+                                                onClick={()=>navigate(`/dashboard/teams/${team._id}/edit`)}
+                                            >
+                                                Edit
+                                            </button>
+                                            <DeleteButton id={team._id} action="/dashboard/teams" />
+                                            
+                                        </div>
+                                    </AdminOnly>                                
+                                </div>
+                            )})}
+                            <Outlet />
+                        </div>
                     </div>
                     ):(
                     /* Empty State */
-                        <div className="text-center py-20">
-                            <p className="text-gray-500">No team found. Create one to get started!</p>
+                        <div className="py-20 text-center">
+                            {query ? (
+                                <p className="text-slate-500">
+                                    No teams match "<span className="font-medium">{query}</span>".
+                                </p>
+                            ) : (
+                                <p className="text-slate-500">
+                                    No teams found. Create one to get started!
+                                </p>
+                            )}
                         </div>
                     )
                 }
-            </div>
         </div>
     );
 }
@@ -113,105 +212,233 @@ export function TeamManagement() {
         (t) => t.team?._id === team._id
     );
 
-    console.log("Tasks on team:", tasksOnTeam);
+    const memberCount = new Set(
+        tasksOnTeam.flatMap(
+            task => task.owners?.map(owner => owner._id) || []
+        )
+    ).size;
+
+    const completedTasks = tasksOnTeam.filter(
+        task => task.status === "completed"
+    ).length;
+
+    //console.log("Tasks on team:", tasksOnTeam);
 
     return (
-        <div className="p-6 min-h-screen">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <h1 className="text-3xl font-bold text-blue-600">
-                    Team Management
-                </h1>
+        <div className="space-y-10 rounded-2xl border border-slate-200 bg-white shadow-sm"> 
+        <div className="min-h-screen">
+            
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* headers */}
+                <div className="mb-8">
 
-                <div className="bg-gray-300 border border-gray-200 rounded-xl p-4 mt-4">
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="mb-6 flex items-center gap-2 text-slate-500 hover:text-blue-600"
+                    >
+                        <FiArrowLeft />
+                        Back to Teams
+                    </button>
 
-                    {/* TEAM DETAILS */}
-                    {team && (
-                        <div className="mt-4">
-                            <h2>
-                                <span className="font-bold">Team Name: </span>
-                                {team.name}
-                            </h2>
+                    <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
 
-                            <p>
-                                <span className="font-bold">Description: </span>
-                                {team.description}
-                            </p>
+                        <div className="flex flex-col gap-6 lg:flex-row lg:justify-between">
+
+                            <div>
+
+                                <h1 className="text-4xl font-bold">
+                                    {team.name}
+                                </h1>
+
+                                <p className="mt-3 max-w-2xl text-blue-100">
+                                    {team.description}
+                                </p>
+
+                            </div>
 
                             <AdminOnly>
+
                                 <button
-                                    onClick={() => navigate(`/teams/${team._id}/edit`)}
-                                    className="mt-4 text-blue-800 text-xl font-bold"
+                                    onClick={() =>
+                                        navigate(`/dashboard/teams/${team._id}/edit`)
+                                    }
+                                    className="rounded-xl bg-white px-6 py-3 font-semibold text-blue-700 transition hover:bg-blue-50"
                                 >
                                     Edit Team
                                 </button>
+
                             </AdminOnly>
+
                         </div>
-                    )}
-                    
-                    {tasksOnTeam.length > 0 ? (
-                        <>
-                            {tasksOnTeam.map((t, index) => (
-                                <div
-                                    key={t._id}
-                                    className="bg-gray-100 border border-gray-200 sm:px-6 lg:px-8 py-4 shadow rounded-xl mt-4"
-                                >
-                                    <p>
-                                        <span className="font-bold">
-                                            Task #{index + 1}:
-                                        </span>{" "}
-                                        {t.name}
-                                    </p>
 
-                                    <p>
-                                        <span className="font-bold">Tag: </span>
-                                        {t.tags.map((tagId) => {
-                                        const tagObj = tags.tags.find((t) => t._id === tagId);
-                                        return tagObj ? (
-                                            <span key={tagId}>
-                                                {tagObj.name}{", "}
-                                            </span>
-                                        ) : null;
-                                    })}
-                                    </p>
+                    </div>
 
-                                    <p>
-                                        <span className="font-bold">Owners: </span>
-                                        {t.owners?.length > 0 
-                                            ? t.owners.map(o => o.name || o).join(", ") 
-                                            : "No owners yet"}
-                                    </p>
+                </div>
 
-                                    <p>
-                                        <span className="font-bold">Project: </span>
-                                        {t.project?.name}
-                                    </p>
+                {/* stats */}
 
-                                    <p>
-                                        <span className="font-bold">Due Date: </span>
-                                        {calcDueDate(t.timeToComplete)}
-                                    </p>
+                <div className="mb-8 grid gap-6 md:grid-cols-3">
 
-                                    <AdminOnly>
-                                        <button
-                                            className="text-blue-800 font-bold"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                navigate(`/tasks/${t._id}/edit`);
-                                            }}
-                                        >
-                                            Edit Task
-                                        </button>
-                                    </AdminOnly>
+                    <StatCard
+                        icon={FiUsers}
+                        title="Members"
+                        value={memberCount}
+                        iconColor="text-blue-600"
+                        iconBg="bg-blue-50"
+                    />
+
+                    <StatCard
+                        icon={FiClipboard}
+                        title="Tasks"
+                        value={tasksOnTeam.length}
+                        iconColor="text-green-600"
+                        iconBg="bg-green-50"
+                    />
+
+                    <StatCard
+                        icon={FiCheckCircle}
+                        title="Completed"
+                        value={completedTasks}
+                        iconColor="text-emerald-600"
+                        iconBg="bg-emerald-50"
+                    />
+
+                </div>
+
+                <div>
+                    {/* TASKS SECTION */}
+                        <div className="mt-10">
+                            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-slate-900">
+                                        Assigned Tasks
+                                    </h2>
+                                    <p className="mt-1 text-sm text-slate-500">
+                                        Tasks currently assigned to this team.
+                                    </p>
                                 </div>
-                            ))}
-                        </>
-                    ) : (
-                        <div className="bg-gray-100 border border-gray-200 sm:px-6 lg:px-8 py-4 shadow rounded-xl mt-4">
-                            <h2>No tasks assigned to this team yet.</h2>
+
+                                <span className="self-start rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700">
+                                    {tasksOnTeam.length} {tasksOnTeam.length === 1 ? "Task" : "Tasks"}
+                                </span>
+                            </div>
+
+                            {tasksOnTeam.length > 0 ? (
+                                <div className="space-y-6">
+                                    {tasksOnTeam.map((task) => (
+                                        <div
+                                            key={task._id}
+                                            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-md"
+                                        >
+                                            {/* Header */}
+                                            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                                                <div>
+                                                    <h3 className="text-xl font-semibold text-slate-900">
+                                                        {task.name}
+                                                    </h3>
+
+                                                    <p className="mt-1 text-sm text-slate-500">
+                                                        {task.project?.name || "No project assigned"}
+                                                    </p>
+
+                                                    {/* Tags */}
+                                                    <div className="mt-4 flex flex-wrap gap-2">
+                                                        {task.tags?.length > 0 ? (
+                                                            task.tags.map((tagId) => {
+                                                                const tag = tags.tags.find(
+                                                                    (t) => t._id === tagId
+                                                                );
+
+                                                                return tag ? (
+                                                                    <span
+                                                                        key={tagId}
+                                                                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
+                                                                    >
+                                                                        {tag.name}
+                                                                    </span>
+                                                                ) : null;
+                                                            })
+                                                        ) : (
+                                                            <span className="text-xs text-slate-400">
+                                                                No Tags
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <span
+                                                    className={`rounded-full px-4 py-2 text-xs font-semibold capitalize ${
+                                                        task.status === "completed"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : task.status === "in-progress"
+                                                            ? "bg-yellow-100 text-yellow-700"
+                                                            : "bg-slate-100 text-slate-700"
+                                                    }`}
+                                                >
+                                                    {task.status}
+                                                </span>
+                                            </div>
+
+                                            {/* Information */}
+                                            <div className="mt-8 grid gap-6 md:grid-cols-2">
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                                        Owners
+                                                    </p>
+
+                                                    <p className="mt-2 text-slate-700">
+                                                        {task.owners?.length > 0
+                                                            ? task.owners
+                                                                .map((owner) => owner.name)
+                                                                .join(", ")
+                                                            : "No owners assigned"}
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                                        Due Date
+                                                    </p>
+
+                                                    <p className="mt-2 text-slate-700">
+                                                        {calcDueDate(task.timeToComplete)}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <AdminOnly>
+                                                <div className="mt-8 flex justify-end">
+                                                    <button
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/dashboard/tasks/${task._id}/edit`
+                                                            )
+                                                        }
+                                                        className="rounded-lg bg-blue-50 px-5 py-2 font-medium text-blue-600 transition hover:bg-blue-100"
+                                                    >
+                                                        Edit Task
+                                                    </button>
+                                                </div>
+                                            </AdminOnly>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
+                                    <h3 className="text-lg font-semibold text-slate-700">
+                                        No tasks assigned
+                                    </h3>
+
+                                    <p className="mt-2 text-slate-500">
+                                        This team doesn't have any tasks assigned yet.
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                    )}
                 </div>
             </div>
+        </div>
         </div>
     );
 }
@@ -235,7 +462,7 @@ export function TeamForm(){
         if(fetcher.data?.success){
             toast.success(fetcher.data.message);
             const timer = setTimeout(()=>{
-                navigate('/teams')
+                navigate('/dashboard/teams')
             }, 500);
 
             return ()=> clearTimeout(timer);
@@ -268,60 +495,82 @@ export function TeamForm(){
 
     return(
         <>
-            <Modal onClose={()=> navigate("/teams")}>
-                <fetcher.Form method="post" action="/teams" className="container mx-auto p-4 md:p-8">
-                    <div className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-                        <label 
-                            htmlFor="name" 
-                            className="block text-gray-700"
-                        >
-                            Team Name:
-                        </label>
-                        <input 
-                            type="text"
-                            name="name"
-                            id="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Team name"
+            <Modal onClose={() => navigate("/dashboard/teams")}>
+                <fetcher.Form
+                    method="post"
+                    action="/dashboard/teams"
+                    className="flex h-full flex-col min-h-0"
+                >
+
+                        {/* Header */}
+                        <ModalHeader
+                            title={isEdit ? "Edit Team" : "Create Team"}
+                            description={
+                                isEdit
+                                    ? "Update your team's information."
+                                    : "Create a new team to organize work."
+                            }
                         />
 
-                        <label 
-                            htmlFor="description" 
-                            className="block text-gray-700"
-                        >
-                            Team Description:
-                        </label>
-                        <input 
-                            type="text"
-                            name="description"
-                            id="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                            placeholder="Team Description"
-                        />
+                        {/* Team Name */}
+                        <ModalBody>
+                        <div className="mb-6">
+                            <label
+                                htmlFor="name"
+                                className="mb-2 block text-sm font-medium text-slate-700"
+                            >
+                                Team Name
+                            </label>
+
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                required
+                                placeholder="e.g. Backend Team"
+                                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            />
+                        </div>
+
+                        {/* Description */}
+                        <div className="mb-8">
+                            <label
+                                htmlFor="description"
+                                className="mb-2 block text-sm font-medium text-slate-700"
+                            >
+                                Description
+                            </label>
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                rows={4}
+                                value={formData.description}
+                                onChange={handleChange}
+                                required
+                                placeholder="Describe the team's purpose..."
+                                className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            />
+                        </div>
 
                         {isEdit && (
-                            <input type="hidden" name="id" value={id} />
+                            <input
+                                type="hidden"
+                                name="id"
+                                value={id}
+                            />
                         )}
-
-                        <button 
-                            type="submit" 
-                            name="intent" 
-                            value={ isEdit ? "update" : "create" } 
-                            disabled={isSubmitting}
-                            className=" mt-4 w-full bg-blue-500 text-white p-2 rounded-md"
-                        > 
-                            { isEdit ? "Edit Team" : "Create Team" }
-                        </button>
-                    </div>
+                        </ModalBody>
+                        <ModalFooter
+                            onCancel={() => navigate("/dashboard/teams")}
+                            isSubmitting={isSubmitting}
+                            isEdit={isEdit}
+                            createLabel="Create Team"
+                        />
                 </fetcher.Form>
-            </Modal>
-            
+            </Modal>   
         </>
     )
 }
