@@ -34,6 +34,7 @@ async function rootLoader() {
             apiFetch(`${BASE_URL}/api/tasks`),
             apiFetch(`${BASE_URL}/api/teams`),
             apiFetch(`${BASE_URL}/api/tags`),
+            apiFetch(`${BASE_URL}/api/auth/list`)
         ];
 
         // Only add the users request if the logged-in user is an admin

@@ -39,200 +39,12 @@ export function TaskSection(){
 
         });
 
-    //console.log("filteredData: ",filteredData);
-
-//     return (
-//             // <div className="max-w-7xl py-6">
-//             <div className="space-y-10 rounded-2xl border border-slate-200 bg-white shadow-sm p-6">
-//                 <div className="mb-8 flex flex-col gap-6 lg:flex-col lg:items-center lg:justify-between">
-
-//                     <div>
-
-//                         {/* <h1 className="text-4xl font-bold text-slate-900">
-//                             Tasks
-//                         </h1> */}
-
-//                         <p className="mt-2 text-slate-500">
-//                             Track work, assign teammates, and monitor progress.
-//                         </p>
-
-//                     </div>
-
-//                     <div className="flex flex-wrap items-center gap-4">
-//                     <h1 className="text-3xl font-bold text-blue-600">My Tasks</h1>
-//                     <div className="flex items-center gap-4">
-//                         <select 
-//                             name="filter" 
-//                             id="filter"
-//                             className="px-3 py-2 outline-none bg-white border border-gray-300 rounded-md shadow-sm text-sm"
-//                             onChange={(e)=>{setFilterTag(e.target.value)}}
-//                             value={filterTag}
-//                         >
-//                             <option value="">Filter</option>
-//                             <option value={"to-do"}>To Do</option>                   
-//                             <option value={"in-progress"}>In progress</option>                    
-//                             <option value={"completed"}>Completed</option>                    
-//                             <option value={"blocked"}>Blocked</option>
-
-//                         </select>
-//                             <button 
-//                                 onClick={(e)=>e.stopPropagation()} 
-//                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition"
-//                             >
-//                                 <Link to={"/tasks/create"}>+ New Task</Link>
-//                             </button>                        
-                        
-//                     </div>
-//                </div>
-
-//                <div className="mb-6 flex flex-col gap-4 md:flex-row">
-
-//                     <input
-//                         value={query}
-//                         onChange={(e)=>setQuery(e.target.value)}
-//                         placeholder="Search tasks..."
-//                         className="flex-1 rounded-xl border border-slate-200 px-4 py-3 shadow-sm outline-none focus:border-blue-500"
-//                     />
-
-//                     <select
-//                         value={filterTag}
-//                         onChange={(e)=>setFilterTag(e.target.value)}
-//                         className="rounded-xl border border-slate-200 px-4 py-3 shadow-sm"
-//                     >
-//                         <option value="">All Status</option>
-//                         <option value="to-do">To Do</option>
-//                         <option value="in-progress">In Progress</option>
-//                         <option value="completed">Completed</option>
-//                         <option value="blocked">Blocked</option>
-//                     </select>
-
-//                 </div>
-            
-//                 <div className="bg-white rounded-md shadow overflow-hidden">
-//                     <div className="overflow-x-auto">                   
-//                         <table className="min-w-full divide-y divide-gray-200">
-//                             <thead className="bg-slate-50">
-//                                 <tr>
-//                                     <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-//                                         #
-//                                     </th>
-//                                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-//                                         Task Name
-//                                     </th>
-//                                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-//                                         Owners
-//                                     </th>
-//                                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-//                                         Status
-//                                     </th>
-//                                     <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-//                                         Due Date
-//                                     </th>                                    
-//                                         <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-//                                             Actions
-//                                         </th>                                    
-//                                 </tr>
-//                             </thead>
-//                             <tbody className="bg-white divide-y divide-gray-200">
-//                                 { filteredData && filteredData.map((task, index) => (
-//                                     <tr 
-//                                         key={index} 
-//                                         className="cursor-pointer transition hover:bg-blue-50"
-//                                         onClick={()=>navigate(`/tasks/${task._id}`)}
-//                                     >
-//                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-//                                             {index + 1}
-//                                         </td>
-//                                         <td className="px-6 py-4">
-
-//                                             <div className="flex -space-x-2">
-
-//                                                 {task.owners.map(owner => (
-
-//                                                     <div
-//                                                         key={owner._id}
-//                                                         className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-blue-600 text-sm font-bold text-white"
-//                                                     >
-//                                                         {owner.name[0]}
-//                                                     </div>
-
-//                                                 ))}
-
-//                                             </div>
-
-//                                         </td>
-//                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-//                                             {(task.owners || []).map((owner, idx) => (
-//                                                 <span key={idx}>
-//                                                     {owner.name}
-//                                                     {idx < task.owners.length - 1 ? ', ' : ''}
-//                                                 </span>
-//                                             ))}
-//                                         </td>
-//                                         <td className="px-6 py-4 whitespace-nowrap">
-//                                             <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-//                                                 task.status === 'completed' 
-//                                                     ? 'bg-green-100 text-green-800' 
-//                                                     : task.status === 'in-progress'
-//                                                     ? 'bg-yellow-100 text-yellow-800'
-//                                                     : task.status === 'blocked'
-//                                                     ? 'bg-red-100 text-red-800'
-//                                                     : task.status === 'to-do'
-//                                                     ? 'bg-blue-100 text-blue-800'
-//                                                     : 'bg-gray-100 text-gray-800'
-//                                             }`}>
-//                                                 {task.status}
-//                                             </span>
-//                                         </td>
-//                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-//                                             {calcDueDate(task.timeToComplete)}
-//                                         </td>                                        
-//                                             <td 
-//                                             onClick={(e)=>e.stopPropagation()}
-//                                                 className="px-6 py-4 whitespace-nowrap text-sm font-medium"
-//                                             >
-//                                                 <div className="flex gap-2">
-
-//                                                 <button
-//                                                     onClick={() => navigate(`/tasks/${task._id}/edit`)}
-//                                                     className="rounded-lg bg-blue-50 px-3 py-2 text-blue-600 hover:bg-blue-100"
-//                                                 >
-//                                                     Edit
-//                                                 </button>
-
-//                                                 <DeleteButton id={task._id} action="/tasks" />
-//                                                 </div>
-// {/* 
-//                                                 </div>
-//                                                 <button 
-//                                                     className="text-blue-500 hover:text-blue-700 font-medium text-sm me-2"
-//                                                     onClick={() => navigate(`/tasks/${task._id}/edit`)}
-//                                                 >
-//                                                     Edit
-//                                                 </button>
-
-//                                                 <DeleteButton id={task._id} action="/tasks" /> */}
-//                                             </td>                                        
-//                                     </tr>
-//                                 ))}
-//                             </tbody>
-//                         </table>
-//                     </div>
-//                     <Outlet />
-//                 </div>
-//             </div>
-//         </div>
-//     )
     return (
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
             {/* Header */}
 
             <div className="mb-8">
-
-                {/* <h1 className="text-4xl font-bold text-slate-900">
-                    Tasks
-                </h1> */}
 
                 <p className="mt-2 text-slate-500">
                     Track work, assign teammates, and monitor progress.
@@ -433,92 +245,6 @@ export function TaskSection(){
         </div>
     );
 };
-
-// export function TaskManagement() {
-
-//     const navigate = useNavigate();
-    
-//     const loaderData = useLoaderData();
-    
-//     const task = loaderData.tasks || []; 
-
-//     const { tags } = useRouteLoaderData("root");
-//     console.log("tags: ", tags.tags)
-
-//     console.log("Task:", task);
-
-//     return (
-//         <div className="p-6 min-h-screen">
-//             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-//                 <h1 className="text-3xl font-bold text-blue-600">
-//                     Task Management
-//                 </h1>
-
-//                 <div className="bg-gray-300 border border-gray-200 rounded-xl p-4 mt-4">
-
-//                     {task && (
-//                         <div className="bg-gray-100 border border-gray-200 sm:px-6 lg:px-8 py-4 shadow rounded-xl mt-4">
-
-//                             <h2>
-//                                 <span className="font-bold">Task Name: </span>
-//                                 {task.name}
-//                             </h2>
-
-//                            <p>
-//                                 <span className="font-bold">Tags: </span>
-//                                     {task.tags?.map((tagId) => {
-//                                         const tagObj = tags.tags.find((t) => t._id === tagId);
-//                                         return tagObj ? (
-//                                             <span key={tagId}>
-//                                                 {tagObj.name}{", "}
-//                                             </span>
-//                                         ) : null;
-//                                     })}
-//                             </p>
-
-//                             <p>
-//                                 <span className="font-bold">Status: </span>
-//                                 {task.status ? task.status.charAt(0).toUpperCase() + task.status.slice(1) : "N/A"}
-//                             </p>
-
-//                             <p>
-//                                 <span className="font-bold">Owners: </span>
-//                                 { task.owners?.length > 0 
-//                                     ? task.owners.map(o => o.name ?? o).join(", ") 
-//                                     : "No owners yet" }
-//                             </p>
-
-//                             <p>
-//                                 <span className="font-bold">Project: </span>
-//                                 {task.project?.name}
-//                             </p>
-
-//                             <p>
-//                                 <span className="font-bold">Team: </span>
-//                                 {task.team?.name}
-//                             </p>
-
-//                             <p>
-//                                 <span className="font-bold">Due Date: </span>
-//                                 {calcDueDate(task.timeToComplete)}
-//                             </p>
-
-//                             <AdminOnly>
-//                                 <button
-//                                     onClick={() => navigate(`/dashboard/tasks/${task._id}/edit`)}
-//                                     className="mt-4 text-blue-800 text-xl font-bold"
-//                                 >
-//                                     Edit Task
-//                                 </button>
-//                             </AdminOnly>
-//                         </div>
-//                     )}
-
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// }
 
 export function TaskManagement() {
     const navigate = useNavigate();
@@ -843,6 +569,7 @@ export function TaskForm(){
                                     id="owners"
                                     name="owners"
                                     value={formData.owners}
+                                    required
                                     onChange={(e) =>
                                         setFormData({
                                             ...formData,
@@ -887,6 +614,7 @@ export function TaskForm(){
                                             ),
                                         })
                                     }
+                                    required
                                     className="h-36 w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
                                 >
                                     {tags?.tags?.map((tag) => (
@@ -918,6 +646,7 @@ export function TaskForm(){
                                     value={formData.timeToComplete}
                                     onChange={handleChange}
                                     placeholder="5"
+                                    required
                                     className="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none"
                                 />
                             </div>

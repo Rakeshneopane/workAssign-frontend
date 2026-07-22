@@ -70,7 +70,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link
-            to="/"
+            to="/dashboard"
             className="mb-8 flex items-center justify-center gap-3"
           >
             <img

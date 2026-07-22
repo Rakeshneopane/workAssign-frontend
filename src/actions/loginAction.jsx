@@ -13,13 +13,13 @@ export default async function loginAction({ request }) {
             body: JSON.stringify({ email, password }),
         });
 
-        console.log(response);
+        //console.log(response);
 
         localStorage.setItem("authToken", response.token);
-        console.log(response.token);
+        //console.log(response.token);
         localStorage.setItem("user", JSON.stringify(response.user));
 
-        return redirect("/");
+        return redirect("/dashboard");
     } catch (error) {
         console.error("Login error:", error);
         return { error: error?.message || "Login failed. Please try again." };

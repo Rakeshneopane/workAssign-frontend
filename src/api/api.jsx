@@ -17,9 +17,15 @@ const apiFetch = async (url, options ={})=>{
             },  
         });
 
-        if(response.status === 401 && token){
+        // if(response.status === 401 && token){
+        //     localStorage.removeItem("authToken");
+        //     throw new Error("Unauthorized");
+        // }
+
+        if (response.status === 401) {
             localStorage.removeItem("authToken");
-            throw new Error("Unauthorized");
+            window.location.href = "/login";
+            return;
         }
 
         // Check Content-Type header before parsing

@@ -16,7 +16,7 @@ export default async function signupAction({request}){
         
         localStorage.setItem("authToken", res.token);
 
-        return redirect("/");
+        return redirect("/dashboard");
 
 
     } catch (error) {
